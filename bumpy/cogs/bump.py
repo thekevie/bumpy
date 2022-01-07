@@ -8,7 +8,7 @@ import os
 import pymongo
 from main import read_config
 
-MongoClient = pymongo.MongoClient(os.environ['mongodb'])
+MongoClient = pymongo.MongoClient(read_config['mongodb'])
 sett = MongoClient.settings
 servers_db = sett["servers"]
 cooldown = MongoClient.cooldown
@@ -47,6 +47,18 @@ class bump(commands.Cog):
       if not db["on_off"] == "ON":
         em = discord.Embed(title='Command has been disabled', color=discord.Color.blue())
         em.set_footer(text='Use /settings to turn it on again')
+        await ctx.respond(embed=em)
+        return
+      
+      if db["ad"] is None:
+        em = discord.Embed(title='No server description found\nUse /settings and add one', color=discord.Color.blue())
+        em.set_footer(text='/support')
+        await ctx.respond(embed=em)
+        return
+
+      if db["channel_id"] is None:
+        em = discord.Embed(title='No bump channel found\nUse /settings and add one', color=discord.Color.blue())
+        em.set_footer(text='/support')
         await ctx.respond(embed=em)
         return
       
@@ -95,34 +107,35 @@ class bump(commands.Cog):
       
       for item in channel_ids:
         print(item["channel_id"])
-        channel = self.client.get_channel(item["channel_id"])
-        if not channel is None:
+        if not item["channel_id"] is None:
+          channel = self.client.get_channel(item["channel_id"])
+          if not channel is None:
 
-          on_off = item["on_off"]
-          if on_off == "ON":
+            on_off = item["on_off"]
+            if on_off == "ON":
             
-            ad = db["ad"]
-            if ad is None:
-              em = discord.Embed(title='Server Description Is None', color=discord.Color.blue())
-              em.set_footer(text='Use /settings and add an Server Description')
-              await ctx.send(embed=em)
-              return
+              ad = db["ad"]
+              if ad is None:
+                em = discord.Embed(title='Server Description Is None', color=discord.Color.blue())
+                em.set_footer(text='Use /settings and add an Server Description')
+                await ctx.send(embed=em)
+                return
 
-            bump_em = discord.Embed(color=discord.Colour.blue())
-            bump_em.add_field(name='**Invite**', value=invite, inline=True)
-            bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
-            bump_em.add_field(name='**Description**', value=ad, inline=False)
-            bump_em.add_field(name='**Region**', value=ctx.guild.region, inline=True)
-            bump_em.add_field(name='**Server ID**', value=ctx.guild.id, inline=True)
-            bump_em.add_field(name="**Emojis**", value=str(len(ctx.guild.emojis)), inline=True)
-            bump_em.add_field(name="**Boosts**", value=ctx.guild.premium_subscription_count, inline=True)
-            bump_em.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
-            bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
+              bump_em = discord.Embed(color=discord.Colour.blue())
+              bump_em.add_field(name='**Invite**', value=invite, inline=True)
+              bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
+              bump_em.add_field(name='**Description**', value=ad, inline=False)
+              bump_em.add_field(name='**Region**', value=ctx.guild.region, inline=True)
+              bump_em.add_field(name='**Server ID**', value=ctx.guild.id, inline=True)
+              bump_em.add_field(name="**Emojis**", value=str(len(ctx.guild.emojis)), inline=True)
+              bump_em.add_field(name="**Boosts**", value=ctx.guild.premium_subscription_count, inline=True)
+              bump_em.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
+              bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
 
-            try:
-              await channel.send(embed=bump_em)
-            except Exception:
-              pass
+              try:
+                await channel.send(embed=bump_em)
+              except Exception:
+                pass
           
           
       em = discord.Embed(title='Bumped!', description='Your server has been bumped', color=discord.Color.green())
