@@ -3,11 +3,12 @@ from discord.ext import commands
 from discord.ui import Button, View
 import discord
 import datetime
+import os
 
 import pymongo
 from main import read_config
 
-MongoClient = pymongo.MongoClient(read_config["mongodb"])
+MongoClient = pymongo.MongoClient(os.environ['mongodb'])
 sett = MongoClient.settings
 servers_db = sett["servers"]
 cooldown = MongoClient.cooldown
@@ -34,11 +35,15 @@ class bump(commands.Cog):
         else:
           return 0
 
-    @slash_command(description="Command to bumps your server", guild_ids=[875451993462825000])
+    @slash_command(description="Command to bumps your server")
     async def bump(self, ctx):
 
       db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
-
+      if db is None:
+        data = {"guild_id": ctx.guild.id, "ad": None, "channel_id": None, "invite_channel": None, "on_off": "OFF"}
+        servers_db.insert_one(data)
+        db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
+        
       if not db["on_off"] == "ON":
         em = discord.Embed(title='Command has been disabled', color=discord.Color.blue())
         em.set_footer(text='Use /settings to turn it on again')
