@@ -18,17 +18,17 @@ class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
     
-    def get_ratelimit(self, user: discord.User):
-        user_db = bump_db.find_one({"user_id": user.id}, {"_id": 0, "cooldown": 1})
+    def get_ratelimit(self, guild):
+        rate = bump_db.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
         
-        if user_db is None:
+        if rate is None:
           ago = datetime.datetime.now() - datetime.timedelta(minutes=30)
-          data = {"user_id": user.id, "cooldown": ago}
+          data = {"guild_id": guild.id, "cooldown": ago}
           bump_db.insert_one(data)
           return 0
           
         now = datetime.datetime.now()
-        then = user_db["cooldown"]
+        then = rate["cooldown"]
         while now <= then:    
           left = then - now
           return left.total_seconds()
@@ -51,13 +51,13 @@ class bump(commands.Cog):
         return
       
       if db["ad"] is None:
-        em = discord.Embed(title='No server description found\nUse /settings and add one', color=discord.Color.blue())
+        em = discord.Embed(title='No server description found\n/settings to add one', color=discord.Color.blue())
         em.set_footer(text='/support')
         await ctx.respond(embed=em)
         return
 
       if db["channel_id"] is None:
-        em = discord.Embed(title='No bump channel found\nUse /settings and add one', color=discord.Color.blue())
+        em = discord.Embed(title='No bump channel found\n/settings to add one', color=discord.Color.blue())
         em.set_footer(text='/support')
         await ctx.respond(embed=em)
         return
@@ -66,17 +66,17 @@ class bump(commands.Cog):
       #vote = await dbl.get_user_vote(ctx.author.id)
       vote = True
 
-      ratelimit = self.get_ratelimit(ctx.user)
+      ratelimit = self.get_ratelimit(ctx.guild)
       if not ratelimit is None:
         minutes = ratelimit // 60
 
         if vote is True:
           minutes = minutes - 10
           
-        #for partner in read_config["partner"]:
-          #server = self.client.get_guild(partner)
-          #if ctx.author in server.members:
-            #minutes = minutes - 1
+        for partner in read_config["partner"]:
+          server = self.client.get_guild(partner)
+          if ctx.author in server.members:
+            minutes = minutes - 1
 
         if not minutes < 0:
           em = discord.Embed(title=f"Server on cooldown",description=f"You can bump again in {minutes} minutes.", color=discord.Color.red())
@@ -88,7 +88,7 @@ class bump(commands.Cog):
         else: 
           then = datetime.datetime.now() + datetime.timedelta(minutes=30)
           data = {"$set":{"cooldown": then}}
-          bump_db.update_one({"user_id": ctx.user.id}, data)
+          bump_db.update_one({"guild_id": ctx.guild.id}, data)
           
 
       em = discord.Embed(title='Bumping!', description='Your server is beening bumped', color=discord.Color.blue())
@@ -106,7 +106,6 @@ class bump(commands.Cog):
       channel_ids = servers_db.find({}, {"_id": 0, "channel_id": 1, "on_off": 1})
       
       for item in channel_ids:
-        print(item["channel_id"])
         if not item["channel_id"] is None:
           channel = self.client.get_channel(item["channel_id"])
           if not channel is None:
