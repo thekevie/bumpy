@@ -9,7 +9,10 @@ def read_config():
 
 read_config = read_config()
 
-client=discord.Bot(intents = discord.Intents.all())
+intents = discord.Intents.default()
+intents.members = True
+
+client=discord.Bot(intents = intents)
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
