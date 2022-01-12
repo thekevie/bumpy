@@ -1,6 +1,8 @@
+from os import stat
 import discord
 from discord.ext import commands, tasks
 import asyncio
+import random
 
 from main import read_config
 
@@ -11,8 +13,15 @@ class events(commands.Cog):
         
     @tasks.loop()
     async def status(self):
-      for status in read_config["status"]:
-        await self.client.change_presence(activity=discord.Game(name=(status)))
+        status = random.sample(read_config["status"], 3)
+        print(status)
+        await self.client.change_presence(activity=discord.Game(name=(status[0])))
+        await asyncio.sleep(8)
+        
+        await self.client.change_presence(activity=discord.Game(name=(status[1])))
+        await asyncio.sleep(8)
+        
+        await self.client.change_presence(activity=discord.Game(name=(status[2])))
         await asyncio.sleep(8)
         
         await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.client.guilds)} Servers"))
