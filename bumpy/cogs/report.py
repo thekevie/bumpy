@@ -29,7 +29,7 @@ class report(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @slash_command(description="Report a server", guild_id=[875451993462825000])
+    @slash_command(description="Report a server")
     async def report(self, ctx, server: discord.Option(str, "Send the Guild ID for the server you want to report")):
         em = discord.Embed(title="Report", description="By pushing the **Confirm** button you agree on being message by the bumpy support team. Here is the report check so everything is right.", color=discord.Colour.blue())
         em.add_field(name="Guild ID", value=server)
