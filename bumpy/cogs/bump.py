@@ -11,6 +11,7 @@ from main import read_config
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
 sett = MongoClient.settings
 servers_db = sett["servers"]
+blocked_db = sett["blocked"]
 cooldown = MongoClient.cooldown
 bump_db = cooldown["bump"]
 
@@ -37,6 +38,13 @@ class bump(commands.Cog):
 
     @slash_command(description="Command to bumps your server")
     async def bump(self, ctx):
+      blocked = blocked_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "blocked": 1})
+      if blocked is None:
+        pass
+      elif blocked["blocked"] is True:
+        em = discord.Embed(title='Your server has been blocked', color=discord.Color.blue())
+        await ctx.respond(embed=em)
+        return
 
       db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
       if db is None:
@@ -73,10 +81,10 @@ class bump(commands.Cog):
         if vote is True:
           minutes = minutes - 10
           
-        for partner in read_config["partner"]:
-          server = self.client.get_guild(partner)
-          if ctx.author in server.members:
-            minutes = minutes - 1
+        #for partner in read_config["partner"]:
+          #server = self.client.get_guild(partner)
+          #if ctx.author in server.members:
+            #minutes = minutes - 1
 
         if not minutes < 0:
           em = discord.Embed(title=f"Server on cooldown",description=f"You can bump again in {minutes} minutes.", color=discord.Color.red())
