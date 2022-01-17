@@ -12,7 +12,7 @@ read_config = read_config()
 intents = discord.Intents.default()
 intents.members = True
 
-client=discord.Bot(intents = intents)
+client=discord.Bot(owner_ids = read_config["owners"], intents = intents)
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
