@@ -43,7 +43,7 @@ class report(commands.Cog):
         if view.value is True:
             chn = self.client.get_guild(id).text_channels[0]
             invite = await chn.create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
-            channel = self.client.get_channel(933680144781037598)
+            channel = self.client.get_channel(932557305340391464)
             em = discord.Embed(title="Report", color=discord.Colour.blue())
             em.set_author(name=f"{ctx.author.display_name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar.url)
             em.add_field(name="Guild Name", value=self.client.get_guild(id).name, inline=False)
