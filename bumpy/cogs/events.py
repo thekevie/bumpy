@@ -6,6 +6,10 @@ import random
 
 from main import read_config
 
+import pymongo
+
+MongoClient = pymongo.MongoClient(read_config['mongodb'])
+db = MongoClient.settings["servers"]
 class events(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -14,7 +18,6 @@ class events(commands.Cog):
     @tasks.loop()
     async def status(self):
         status = random.sample(read_config["status"], 3)
-        print(status)
         await self.client.change_presence(activity=discord.Game(name=(status[0])))
         await asyncio.sleep(8)
         
@@ -40,10 +43,22 @@ class events(commands.Cog):
       print(f"{len(self.client.guilds)} Servers")
       await self.client.change_presence(status=discord.Status.online)
       
+      if not self.client.user.id == 880766859534794764:
+        return
+      
+      for x in db.find({},{"_id": 0, "guild_id": 1}):
+          id = int(x["guild_id"])
+          guild = self.client.get_guild(id)
+          if not guild in self.client.guilds:
+              db.delete_one({"guild_id": id})
+          else:
+              pass
+          
+      
     @commands.Cog.listener()
     async def on_message(self, message):
-      if message.content == ".bump":
-        await message.channel.send("Bumpy has been moved to slash commmands if you can use them in the server your in try to reinvite the bot using this link https://dsc.gg/bumpy")
+        if message.content == ".bump":
+            await message.channel.send("Bumpy has been moved to slash commmands if you can use them in the server your in try to reinvite the bot using this link https://dsc.gg/bumpy")
       
 def setup(client):
     client.add_cog(events(client))
