@@ -188,7 +188,7 @@ class settings(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-    @slash_command(description="A command to chnage the settings")
+    @slash_command(description="A command to change the settings")
     @commands.has_permissions(manage_guild=True)
     async def settings(self, ctx: discord.ApplicationContext):
       r = s.find_one({"guild_id": ctx.guild.id})
