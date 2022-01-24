@@ -88,7 +88,7 @@ class bump(commands.Cog):
 
         if not minutes < 0:
           em = discord.Embed(title=f"Server on cooldown",description=f"You can bump again in {minutes} minutes.", color=discord.Color.red())
-          em.add_field(name='Tip', value='For [voters](https://top.gg/bot/880766859534794764/vote) cooldown is 20 minutes')
+          em.add_field(name='Note', value='Please [vote](https://top.gg/bot/880766859534794764/vote) for us so we can grow!')
           em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
           await ctx.respond(embed=em)
           return
@@ -100,7 +100,7 @@ class bump(commands.Cog):
           
 
       em = discord.Embed(title='Bumping!', description='Your server is beening bumped', color=discord.Color.blue())
-      em.add_field(name='Tip', value='For [voters](https://top.gg/bot/880766859534794764/vote) cooldown is 20 minutes')
+      em.add_field(name='Note', value='Please [vote](https://top.gg/bot/880766859534794764/vote) for us so we can grow!')
       em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
       await ctx.respond(embed=em)
       
@@ -146,7 +146,7 @@ class bump(commands.Cog):
           
           
       em = discord.Embed(title='Bumped!', description='Your server has been bumped', color=discord.Color.green())
-      em.add_field(name='Tip', value='For [voters](https://top.gg/bot/880766859534794764/vote) cooldown is 20 minutes')
+      em.add_field(name='Note', value='Please [vote](https://top.gg/bot/880766859534794764/vote) for us so we can grow!')
       em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
       await ctx.send(embed=em)
       
