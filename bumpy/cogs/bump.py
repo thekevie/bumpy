@@ -48,7 +48,7 @@ class bump(commands.Cog):
 
       db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
       if db is None:
-        data = {"guild_id": ctx.guild.id, "ad": None, "channel_id": None, "invite_channel": None, "on_off": "OFF"}
+        data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None}
         servers_db.insert_one(data)
         db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
         
@@ -111,18 +111,18 @@ class bump(commands.Cog):
       
       invite = await invite_channel.create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
       
-      channel_ids = servers_db.find({}, {"_id": 0, "channel_id": 1, "on_off": 1})
+      channel_ids = servers_db.find({}, {"_id": 0, "status": 1, "channel_id": 1})
       
       for item in channel_ids:
-        if not item["channel_id"] is None:
-          channel = self.client.get_channel(item["channel_id"])
+        if not item["bump_channel"] is None:
+          channel = self.client.get_channel(item["bump_channel"])
           if not channel is None:
 
-            on_off = item["on_off"]
-            if on_off == "ON":
+            status = item["status"]
+            if status == "ON":
             
-              ad = db["ad"]
-              if ad is None:
+              description = db["description"]
+              if description is None:
                 em = discord.Embed(title='Server Description Is None', color=discord.Color.blue())
                 em.set_footer(text='Use /settings and add an Server Description')
                 await ctx.send(embed=em)
@@ -131,7 +131,7 @@ class bump(commands.Cog):
               bump_em = discord.Embed(color=discord.Colour.blue())
               bump_em.add_field(name='**Invite**', value=invite, inline=True)
               bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
-              bump_em.add_field(name='**Description**', value=ad, inline=False)
+              bump_em.add_field(name='**Description**', value=description, inline=False)
               bump_em.add_field(name='**Region**', value=ctx.guild.region, inline=True)
               bump_em.add_field(name='**Server ID**', value=ctx.guild.id, inline=True)
               bump_em.add_field(name="**Emojis**", value=str(len(ctx.guild.emojis)), inline=True)
