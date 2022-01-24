@@ -13,9 +13,10 @@ class block(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @slash_command(description="Block a server from bumpy", default_permission=False)
+    @slash_command(description="DEV ONLY: Block a server from bumpy", default_permission=False)
     @permissions.is_owner()
     async def block(self, ctx, id: discord.Option(str, "The guild id of the server you want to block")):
+        id = int(id)
         r = blocked_db.find_one({"guild_id": ctx.guild.id})
         if r is None:
             data = {"guild_id": id, "blocked": True}
@@ -25,9 +26,10 @@ class block(commands.Cog):
             blocked_db.update_one({"guild_id": ctx.guild.id}, data)
         await ctx.respond("**Server was blocked**", ephemeral=True)
         
-    @slash_command(description="Unblock a server from bumpy", default_permission=False)
+    @slash_command(description="DEV ONLY: Unblock a server from bumpy", default_permission=False)
     @permissions.is_owner()
     async def unblock(self, ctx, id: discord.Option(str, "The guild id of the server you want to block")):
+        id = int(id)
         r = blocked_db.find_one({"guild_id": ctx.guild.id})
         if r is None:
             data = {"guild_id": id, "blocked": False}

@@ -39,20 +39,24 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-      print(self.client.user.name, f"is online")
-      print(f"{len(self.client.guilds)} Servers")
-      await self.client.change_presence(status=discord.Status.online)
+        print(self.client.user.name, f"is online")
+        print(f"{len(self.client.guilds)} Servers")
+        await self.client.change_presence(status=discord.Status.online)
       
-      if not self.client.user.id == 880766859534794764:
-        return
+        if not self.client.user.id == 880766859534794764:
+            return
       
-      for x in db.find({},{"_id": 0, "guild_id": 1}):
-          id = int(x["guild_id"])
-          guild = self.client.get_guild(id)
-          if not guild in self.client.guilds:
-              db.delete_one({"guild_id": id})
-          else:
-              pass
+        for x in db.find({},{"_id": 0, "guild_id": 1}):
+            id = int(x["guild_id"])
+            guild = self.client.get_guild(id)
+            if not guild in self.client.guilds:
+                db.delete_one({"guild_id": id})
+            else:
+                pass
+    
+    @commands.Cog.listener()
+    async def on_guild_leave(self, ctx):  
+        db.delete_one({"guild_id": ctx.guild.id})
           
       
     @commands.Cog.listener()
