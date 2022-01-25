@@ -1,4 +1,3 @@
-from email import message
 from discord.commands import slash_command, permissions
 from discord.ext import commands
 from discord.ui import Button, View
