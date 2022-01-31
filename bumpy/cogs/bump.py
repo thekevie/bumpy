@@ -138,7 +138,7 @@ class bump(commands.Cog):
               bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
               bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
               
-              button = Button(label="Join", style=discord.ButtonStyle.url, emoji="<a:Join:937632101203857518>", url=f"{invite}")
+              button = Button(label="Join Server", style=discord.ButtonStyle.url, url=f"{invite}")
               view = View()
               view.add_item(button)
 
