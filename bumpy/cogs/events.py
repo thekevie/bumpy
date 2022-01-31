@@ -17,21 +17,22 @@ class events(commands.Cog):
         
     @tasks.loop()
     async def status(self):
-        status = random.sample(read_config["status"], 3)
-        await self.client.change_presence(activity=discord.Game(name=(status[0])))
-        await asyncio.sleep(8)
-        
-        await self.client.change_presence(activity=discord.Game(name=(status[1])))
-        await asyncio.sleep(8)
-        
-        await self.client.change_presence(activity=discord.Game(name=(status[2])))
-        await asyncio.sleep(8)
-        
-        await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.client.guilds)} Servers"))
-        await asyncio.sleep(8)
-
-        await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.client.users)} Users"))
-        await asyncio.sleep(8)
+      for status in random.sample(read_config["status"], 1):
+          
+        if status[0] == "Watching":
+            if status[1] == "Users":
+                await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.client.users)} Users"))
+            elif status[1] == "Servers":
+                await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.client.guilds)} Servers"))
+            else:  
+                await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=status[1]))
+        elif status[0] == "Playing":
+            await self.client.change_presence(activity=discord.Game(name=status[1]))   
+        elif status[0] == "Listening":
+            await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=status[1]))
+        elif status[0] == "Streaming":
+            await self.client.change_presence(activity=discord.Streaming(name=status[1], url=status[2]))
+        await asyncio.sleep(10)
 
     @status.before_loop
     async def before_status(self):

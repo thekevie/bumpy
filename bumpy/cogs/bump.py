@@ -52,19 +52,19 @@ class bump(commands.Cog):
         servers_db.insert_one(data)
         db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
         
-      if not db["on_off"] == "ON":
+      if not db["status"] == "ON":
         em = discord.Embed(title='Command has been disabled', color=discord.Color.blue())
         em.set_footer(text='Use /settings to turn it on again')
         await ctx.respond(embed=em)
         return
       
-      if db["ad"] is None:
+      if db["description"] is None:
         em = discord.Embed(title='No server description found\n/settings to add one', color=discord.Color.blue())
         em.set_footer(text='/support')
         await ctx.respond(embed=em)
         return
 
-      if db["channel_id"] is None:
+      if db["bump_channel"] is None:
         em = discord.Embed(title='No bump channel found\n/settings to add one', color=discord.Color.blue())
         em.set_footer(text='/support')
         await ctx.respond(embed=em)
@@ -111,7 +111,7 @@ class bump(commands.Cog):
       
       invite = await invite_channel.create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
       
-      channel_ids = servers_db.find({}, {"_id": 0, "status": 1, "channel_id": 1})
+      channel_ids = servers_db.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
       
       for item in channel_ids:
         if not item["bump_channel"] is None:
@@ -130,17 +130,20 @@ class bump(commands.Cog):
 
               bump_em = discord.Embed(color=discord.Colour.blue())
               bump_em.add_field(name='**Invite**', value=invite, inline=True)
-              bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
               bump_em.add_field(name='**Description**', value=description, inline=False)
-              bump_em.add_field(name='**Region**', value=ctx.guild.region, inline=True)
-              bump_em.add_field(name='**Server ID**', value=ctx.guild.id, inline=True)
+              bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
+              bump_em.add_field(name="**Channels**", value=str(len(ctx.guild.channels)), inline=True)
               bump_em.add_field(name="**Emojis**", value=str(len(ctx.guild.emojis)), inline=True)
               bump_em.add_field(name="**Boosts**", value=ctx.guild.premium_subscription_count, inline=True)
-              bump_em.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
+              bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
               bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
+              
+              button = Button(label="Join", style=discord.ButtonStyle.url, emoji="<a:Join:937632101203857518>", url=f"{invite}")
+              view = View()
+              view.add_item(button)
 
               try:
-                await channel.send(embed=bump_em)
+                await channel.send(embed=bump_em, view=view)
               except Exception:
                 pass
           
