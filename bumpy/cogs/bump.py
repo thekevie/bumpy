@@ -129,7 +129,6 @@ class bump(commands.Cog):
                 return
 
               bump_em = discord.Embed(color=discord.Colour.blue())
-              bump_em.add_field(name='**Invite**', value=invite, inline=True)
               bump_em.add_field(name='**Description**', value=description, inline=False)
               bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
               bump_em.add_field(name="**Channels**", value=str(len(ctx.guild.channels)), inline=True)
