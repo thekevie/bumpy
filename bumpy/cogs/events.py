@@ -9,7 +9,7 @@ from main import read_config
 import pymongo
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
-db = MongoClient.settings["servers"]
+db = MongoClient.db["settings"]
 class events(commands.Cog):
     def __init__(self, client):
         self.client = client

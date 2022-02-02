@@ -6,14 +6,14 @@ import pymongo
 from main import read_config
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
-sett = MongoClient.settings
-blocked_db = sett["blocked"]
+db = MongoClient.db
+blocked_db = db["blocked"]
 
 class block(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @slash_command(description="DEV ONLY: Block a server from bumpy", default_permission=False)
+    @slash_command(description="Block a server from bumpy", default_permission=False, guild_ids=[832743824181952534])
     @permissions.is_owner()
     async def block(self, ctx, id: discord.Option(str, "The guild id of the server you want to block")):
         id = int(id)
@@ -26,7 +26,7 @@ class block(commands.Cog):
             blocked_db.update_one({"guild_id": ctx.guild.id}, data)
         await ctx.respond("**Server was blocked**", ephemeral=True)
         
-    @slash_command(description="DEV ONLY: Unblock a server from bumpy", default_permission=False)
+    @slash_command(description="Unblock a server from bumpy", default_permission=False, guild_ids=[832743824181952534])
     @permissions.is_owner()
     async def unblock(self, ctx, id: discord.Option(str, "The guild id of the server you want to block")):
         id = int(id)

@@ -9,23 +9,22 @@ import pymongo
 from main import read_config
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
-sett = MongoClient.settings
-servers_db = sett["servers"]
-blocked_db = sett["blocked"]
-cooldown = MongoClient.cooldown
-bump_db = cooldown["bump"]
+db = MongoClient.db
+settings_db = db["settings"]
+blocked_db = db["blocked"]
+ratelimit_db = db["cooldown"]
 
 class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
     
     def get_ratelimit(self, guild):
-        rate = bump_db.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
+        rate = ratelimit_db.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
         
         if rate is None:
           ago = datetime.datetime.now() - datetime.timedelta(minutes=30)
           data = {"guild_id": guild.id, "cooldown": ago}
-          bump_db.insert_one(data)
+          ratelimit_db.insert_one(data)
           return 0
           
         now = datetime.datetime.now()
@@ -46,11 +45,11 @@ class bump(commands.Cog):
         await ctx.respond(embed=em)
         return
 
-      db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
+      db = settings_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
       if db is None:
         data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None}
-        servers_db.insert_one(data)
-        db = servers_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
+        settings_db.insert_one(data)
+        db = settings_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
         
       if not db["status"] == "ON":
         em = discord.Embed(title='Command has been disabled', color=discord.Color.blue())
@@ -96,7 +95,7 @@ class bump(commands.Cog):
         else: 
           then = datetime.datetime.now() + datetime.timedelta(minutes=30)
           data = {"$set":{"cooldown": then}}
-          bump_db.update_one({"guild_id": ctx.guild.id}, data)
+          ratelimit_db.update_one({"guild_id": ctx.guild.id}, data)
           
 
       em = discord.Embed(title='Bumping!', description='Your server is beening bumped', color=discord.Color.blue())
@@ -111,7 +110,7 @@ class bump(commands.Cog):
       
       invite = await invite_channel.create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
       
-      channel_ids = servers_db.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
+      channel_ids = settings_db.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
       
       for item in channel_ids:
         if not item["bump_channel"] is None:
