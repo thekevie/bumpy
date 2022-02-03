@@ -10,6 +10,7 @@ import pymongo
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
 db = MongoClient.db["settings"]
+ratelimit_db = db["cooldown"]
 class events(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -52,18 +53,20 @@ class events(commands.Cog):
             guild = self.client.get_guild(id)
             if not guild in self.client.guilds:
                 db.delete_one({"guild_id": id})
+                ratelimit_db.delete_one({"guild_id": id})
             else:
                 pass
     
     @commands.Cog.listener()
     async def on_guild_leave(self, ctx):  
         db.delete_one({"guild_id": ctx.guild.id})
+        ratelimit_db.delete_one({"guild_id": id})
           
       
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.content == ".bump":
-            await message.channel.send("Bumpy has been moved to slash commmands if you can use them in the server your in try to reinvite the bot using this link https://dsc.gg/bumpy")
+            await message.channel.send("Bumpy is now using slash commands. If you cant use them reinvite Bumpy to your server using this link https://dsc.gg/bumpy")
       
 def setup(client):
     client.add_cog(events(client))

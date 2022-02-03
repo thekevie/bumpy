@@ -3,18 +3,20 @@ from discord.ext import commands
 from discord.ui import Button, View
 import discord
 import asyncio
+import sys
 
 import pymongo
 
 from main import read_config
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
-db = MongoClient.settings
-s = db["servers"]
+db = MongoClient.db
+settings_db = db["settings"]
+stats_db = db["stats"]
 
 async def get_data(self, interaction):
   
-  db = s.find_one({"guild_id": interaction.guild.id}, {"_id": 0})
+  db = settings_db.find_one({"guild_id": interaction.guild.id}, {"_id": 0})
   
   if db['bump_channel'] is None:
       bump_channel = None
@@ -49,7 +51,7 @@ class menu(discord.ui.View):
     @discord.ui.button(label="Enabled",style=discord.ButtonStyle.green, custom_id="enabled", row=0)
     async def on_button_callback(self, button, interaction):      
         data = {"$set":{"status": "ON"}}
-        s.update_one({"guild_id": interaction.guild.id}, data)  
+        settings_db.update_one({"guild_id": interaction.guild.id}, data)  
 
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -58,7 +60,7 @@ class menu(discord.ui.View):
     @discord.ui.button(label="Disabled",style=discord.ButtonStyle.red, custom_id="disabled", row=0)
     async def off_button_callback(self, button, interaction):
         data = {"$set":{"status": "OFF"}}
-        s.update_one({"guild_id": interaction.guild.id}, data)
+        settings_db.update_one({"guild_id": interaction.guild.id}, data)
 
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -82,7 +84,7 @@ class menu(discord.ui.View):
         channel_id = answer.channel_mentions[0].id
         
         data = {"$set":{f"bump_channel": channel_id}}
-        s.update_one({"guild_id": interaction.guild.id}, data)
+        settings_db.update_one({"guild_id": interaction.guild.id}, data)
       
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -105,7 +107,7 @@ class menu(discord.ui.View):
         channel_id = answer.channel_mentions[0].id
         
         data = {"$set":{f"invite_channel": channel_id}}
-        s.update_one({"guild_id": interaction.guild.id}, data)
+        settings_db.update_one({"guild_id": interaction.guild.id}, data)
       
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -128,7 +130,7 @@ class menu(discord.ui.View):
         description = answer.content
         
         data = {"$set":{f"description": description}}
-        s.update_one({"guild_id": interaction.guild.id}, data)
+        settings_db.update_one({"guild_id": interaction.guild.id}, data)
         
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -145,57 +147,41 @@ class settings(commands.Cog):
     @slash_command(description="A command to change the settings")
     @commands.has_permissions(manage_guild=True)
     async def settings(self, ctx: discord.ApplicationContext):
-      r = s.find_one({"guild_id": ctx.guild.id})
+      r = settings_db.find_one({"guild_id": ctx.guild.id})
       if r is None:
         data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None}
-        s.insert_one(data)
+        settings_db.insert_one(data)
         
       em = await get_data(self, ctx)
       client = self.client
       view = menu(client)
       await ctx.respond(embed=em, view=view, ephemeral=True)
 
-    @slash_command(description="Get help with the bot")
-    async def help(self, ctx: discord.ApplicationContext):
-      em = discord.Embed(description = "If you need help join the support server and contact us", colour=discord.Colour.blue())
-      em.add_field(name='**Links**', value=f'**[Invite Me](https://discord.com/api/oauth2/authorize?client_id=880766859534794764&permissions=137976212545&scope=bot%20applications.commands) | [Support Server](https://discord.gg/KcH28tRtBu)**')
-      await ctx.respond(embed=em, ephemeral=True)
-
-    @slash_command(description="The bots support server")
-    async def support(self, ctx):
-      em = discord.Embed(colour=discord.Colour.blue())
-      em.add_field(name='**Links**', value=f'**[Invite Me](https://discord.com/api/oauth2/authorize?client_id=880766859534794764&permissions=137976212545&scope=bot%20applications.commands) | [Support Server](https://discord.gg/KcH28tRtBu)**')
-      await ctx.respond(embed=em, ephemeral=True)
-
-    @slash_command(description="The bots invite link")
-    async def invite(self, ctx):
-      em = discord.Embed(colour=discord.Colour.blue())
-      em.add_field(name='**Links**', value=f'**[Invite Me](https://discord.com/api/oauth2/authorize?client_id=880766859534794764&permissions=137976212545&scope=bot%20applications.commands) | [Support Server](https://discord.gg/KcH28tRtBu)**')
-      await ctx.respond(embed=em, ephemeral=True)
-
-    @slash_command(description="A list of all parters")
-    async def partners(self, ctx):
-      value = ""
-
-      for i in read_config["partner"]:
-
-        guild = self.client.get_guild(i)
-        invite = await guild.text_channels[0].create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
-        if ctx.author in guild.members:
-          io = "**(Joined)**"
-        else:
-          io = "**(Not Joined)**"
-
-        value += f'**[{guild.name}]({invite})** {io}\n'
-
-      em = discord.Embed(title='Partners', description=value, color=discord.Color.blue())
-      await ctx.respond(embed=em, ephemeral=True)
-
     @slash_command(description="Some info about the bot")
     async def info(self, ctx):
-      em = discord.Embed(colour=discord.Colour.blue())
-      em.add_field(name='**Links**', value=f'**[Invite Me](https://discord.com/api/oauth2/authorize?client_id=880766859534794764&permissions=137976212545&scope=bot%20applications.commands) | [Support Server](https://discord.gg/KcH28tRtBu)**')
+      em = discord.Embed(title="Bumpy Information", description="Bumpy is a discord bot that list server. You can use the command `/bump` to push your server so more users see it. If you need help with bumpy or have questions join our [support server](https://discord.gg/KcH28tRtBu)", colour=discord.Colour.blue())
       await ctx.respond(embed=em, ephemeral=True)
+      
+    @slash_command(description="The stats for bumpy")
+    async def stats(self, ctx):
+      mongo = db.command("dbstats")
+      dataSize = mongo["dataSize"]
+      storageSize = mongo["storageSize"]
+      
+      used = dataSize / storageSize
+      procent = used * 100
+      procent = round(procent)
+      
+      stats = stats_db.find_one({}, {"_id": 0, "bumps": 1})
+      bumps = stats["bumps"]
+      
+      em = discord.Embed(title="Bumpy Statistics", color=discord.Colour.blue())
+      em.add_field(name="Servers", value=len(self.client.guilds))
+      em.add_field(name="Language", value=f"Python {sys.version[0]}")
+      em.add_field(name="Pycord", value=discord.__version__)
+      em.add_field(name="Memory Used", value=f"{dataSize} MB | {procent}%")
+      em.add_field(name="Total Bumps", value=bumps)
+      await ctx.respond(embed=em)
 
     @slash_command(description="Vote for the bot to get perks")
     async def vote(self, ctx):

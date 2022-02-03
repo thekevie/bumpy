@@ -13,6 +13,7 @@ db = MongoClient.db
 settings_db = db["settings"]
 blocked_db = db["blocked"]
 ratelimit_db = db["cooldown"]
+stats_db = db["stats"]
 
 class bump(commands.Cog):
     def __init__(self, client):
@@ -79,11 +80,6 @@ class bump(commands.Cog):
 
         if vote is True:
           minutes = minutes - 10
-          
-        #for partner in read_config["partner"]:
-          #server = self.client.get_guild(partner)
-          #if ctx.author in server.members:
-            #minutes = minutes - 1
 
         if not minutes < 0:
           em = discord.Embed(title=f"Server on cooldown",description=f"You can bump again in {minutes} minutes.", color=discord.Color.red())
@@ -150,6 +146,18 @@ class bump(commands.Cog):
       em.add_field(name='Note', value='Please [vote](https://top.gg/bot/880766859534794764/vote) for us so we can grow!')
       em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
       await ctx.send(embed=em)
+      
+      stats = stats_db.find_one({}, {"_id": 1, "bumps": 1})
+      if stats is None:
+        data = {"bumps": 0}
+        stats_db.insert_one(data)
+        stats = stats_db.find_one({}, {"_id": 1, "bumps": 1})
+        
+      amount = stats["bumps"]     
+      amount = amount + 1 
+      
+      data = {"$set":{f"bumps": amount}}
+      stats_db.update_one({"_id": stats["_id"]}, data)
       
 def setup(client):
     client.add_cog(bump(client))
