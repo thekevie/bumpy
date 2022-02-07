@@ -7,6 +7,7 @@ import os
 
 import pymongo
 from main import read_config
+import topgg
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
 db = MongoClient.db
@@ -18,6 +19,7 @@ stats_db = db["stats"]
 class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.top = topgg.DBLClient(read_config["top"], autopost=True).set_data(client)
     
     def get_ratelimit(self, guild):
         rate = ratelimit_db.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
@@ -70,9 +72,8 @@ class bump(commands.Cog):
         await ctx.respond(embed=em)
         return
       
-      #dbl = dbl.DBLClient(self.client, os.environ["top"], autopost = True, autopost_interval=900)
-      #vote = await dbl.get_user_vote(ctx.author.id)
-      vote = True
+      self.top.default_bot_id = self.client.user.id
+      vote = await self.top.get_user_vote(ctx.author.id)
 
       ratelimit = self.get_ratelimit(ctx.guild)
       if not ratelimit is None:

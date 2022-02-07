@@ -3,6 +3,8 @@ import discord
 
 import json
 
+import topgg
+
 def read_config():
     with open("config.json") as file:
         return json.load(file)

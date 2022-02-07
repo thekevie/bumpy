@@ -1,4 +1,3 @@
-from os import stat
 import discord
 from discord.ext import commands, tasks
 import asyncio
@@ -7,10 +6,12 @@ import random
 from main import read_config
 
 import pymongo
+import topgg
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
 db = MongoClient.db["settings"]
 ratelimit_db = db["cooldown"]
+
 class events(commands.Cog):
     def __init__(self, client):
         self.client = client

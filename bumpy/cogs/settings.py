@@ -176,12 +176,12 @@ class settings(commands.Cog):
       bumps = stats["bumps"]
       
       em = discord.Embed(title="Bumpy Statistics", color=discord.Colour.blue())
-      em.add_field(name="Servers", value=len(self.client.guilds))
-      em.add_field(name="Language", value=f"Python {sys.version[0]}")
-      em.add_field(name="Pycord", value=discord.__version__)
-      em.add_field(name="Memory Used", value=f"{dataSize} MB | {procent}%")
-      em.add_field(name="Total Bumps", value=bumps)
-      await ctx.respond(embed=em)
+      em.add_field(name="Servers", value=len(self.client.guilds), inline=False)
+      em.add_field(name="Language", value=f"Python {sys.version[0]}", inline=False)
+      em.add_field(name="Pycord", value=discord.__version__, inline=False)
+      em.add_field(name="Memory Used", value=f"{dataSize} MB | {procent}%", inline=False)
+      em.add_field(name="Total Bumps", value=bumps, inline=False)
+      await ctx.respond(embed=em, ephemeral=True)
 
     @slash_command(description="Vote for the bot to get perks")
     async def vote(self, ctx):
