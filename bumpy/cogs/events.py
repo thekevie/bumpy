@@ -1,5 +1,5 @@
-import discord
-from discord.ext import commands, tasks
+import diskord
+from diskord.ext import commands, tasks
 import asyncio
 import random
 
@@ -23,17 +23,17 @@ class events(commands.Cog):
           
         if status[0] == "Watching":
             if status[1] == "Users":
-                await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.client.users)} Users"))
+                await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=f"{len(self.client.users)} Users"))
             elif status[1] == "Servers":
-                await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.client.guilds)} Servers"))
+                await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=f"{len(self.client.guilds)} Servers"))
             else:  
-                await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=status[1]))
+                await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=status[1]))
         elif status[0] == "Playing":
-            await self.client.change_presence(activity=discord.Game(name=status[1]))   
+            await self.client.change_presence(activity=diskord.Game(name=status[1]))   
         elif status[0] == "Listening":
-            await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=status[1]))
+            await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.listening, name=status[1]))
         elif status[0] == "Streaming":
-            await self.client.change_presence(activity=discord.Streaming(name=status[1], url=status[2]))
+            await self.client.change_presence(activity=diskord.Streaming(name=status[1], url=status[2]))
         await asyncio.sleep(10)
 
     @status.before_loop
@@ -44,7 +44,7 @@ class events(commands.Cog):
     async def on_ready(self):
         print(self.client.user.name, f"is online")
         print(f"{len(self.client.guilds)} Servers")
-        await self.client.change_presence(status=discord.Status.online)
+        await self.client.change_presence(status=diskord.Status.online)
       
         if not self.client.user.id == 880766859534794764:
             return

@@ -1,5 +1,6 @@
 import os 
-import discord
+import diskord
+from diskord.ext import commands
 
 import json
 
@@ -11,10 +12,10 @@ def read_config():
 
 read_config = read_config()
 
-intents = discord.Intents.default()
+intents = diskord.Intents.default()
 intents.members = True
 
-client=discord.Bot(owner_ids = read_config["owners"], intents = intents)
+client = commands.Bot(command_prefix=read_config["prefix"], owner_ids = read_config["owners"], intents = intents)
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):

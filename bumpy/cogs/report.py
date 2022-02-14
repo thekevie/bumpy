@@ -1,23 +1,26 @@
-from discord.commands import slash_command, Option, permissions
-from discord.ext import commands
-from discord.ui import Button, View
-import discord
+from diskord.ext import commands
+from diskord.ui import Button, View
+import diskord
 import datetime
 
+import pymongo
 from main import read_config
+MongoClient = pymongo.MongoClient(read_config['mongodb'])
+db = MongoClient.db
+blocked_db = db["blocked"]
 
-class Confirm(discord.ui.View):
+class Confirm(diskord.ui.View):
     def __init__(self):
         super().__init__()
         self.value = None
 
-    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
+    @diskord.ui.button(label="Confirm", style=diskord.ButtonStyle.green)
     async def confirm(self, button, interaction):
         await interaction.response.edit_message(content="**Report was Posted**", embed=None, view=None)
         self.value = True
         self.stop()
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
+    @diskord.ui.button(label="Cancel", style=diskord.ButtonStyle.red)
     async def cancel(self, button, interaction):
         await interaction.response.edit_message(content="**Report was Removed**", embed=None, view=None)
         self.value = False
@@ -26,14 +29,13 @@ class Confirm(discord.ui.View):
 class report(commands.Cog):
     def __init__(self, client):
         self.client = client
-
-    @slash_command(description="Report a server")
-    async def report(self, ctx, 
-        id: discord.Option(str, "Send the Guild ID for the server you want to report"),
-        reason: discord.Option(str, "Why is this server breaking the rules")
-    ):
+        
+    @diskord.application.slash_command(description="Report a server")
+    @diskord.application.option('id', description="Send the Guild ID for the server you want to report")
+    @diskord.application.option('reason', description="The reason for the report")
+    async def report(self, ctx, id, reason):
         id = int(id)
-        em = discord.Embed(title="Report", description="By pushing the **Confirm** button you agree on being message by the bumpy support team. Here is the report check so everything is right.", color=discord.Colour.blue())
+        em = diskord.Embed(title="Report", description="By pushing the **Confirm** button you agree on being message by the bumpy support team. Here is the report check so everything is right.", color=diskord.Colour.blue())
         em.add_field(name="Guild Name", value=self.client.get_guild(id).name)
         em.add_field(name="Guild ID", value=id)
         em.add_field(name="Reason", value=reason, inline=False)
@@ -44,7 +46,7 @@ class report(commands.Cog):
             chn = self.client.get_guild(id).text_channels[0]
             invite = await chn.create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
             channel = self.client.get_channel(932557305340391464)
-            em = discord.Embed(title="Report", color=discord.Colour.blue())
+            em = diskord.Embed(title="Report", color=diskord.Colour.blue())
             em.set_author(name=f"{ctx.author.display_name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar.url)
             em.add_field(name="Guild Name", value=self.client.get_guild(id).name, inline=False)
             em.add_field(name="Guild ID", value=id, inline=False)
@@ -55,6 +57,35 @@ class report(commands.Cog):
             await channel.send(self.client.get_user(read_config["owners"][0]).mention, embed=em)
         else:
             return
+        
+    @diskord.application.slash_command(description="Block a server from bumpy", default_permission=False, guild_ids=[832743824181952534])
+    @commands.is_owner()
+    @diskord.application.option('type', choice=[
+        diskord.OptionChoice(name='add', value='add'),
+        diskord.OptionChoice(name='remove', value='remove'),
+    ])
+    @diskord.application.option('id')
+    async def block(self, ctx, type, id):
+        id = int(id)
+        r = blocked_db.find_one({"guild_id": ctx.guild.id})
+        if type == "add": 
+            if r is None:
+                data = {"guild_id": id, "blocked": True}
+                blocked_db.insert_one(data)
+            else:
+                data = {"$set":{"blocked": True}}
+                blocked_db.update_one({"guild_id": ctx.guild.id}, data)
+            await ctx.respond("**Server was blocked**", ephemeral=True)
+            
+        elif type == "remove":
+            if r is None:
+                data = {"guild_id": id, "blocked": False}
+                blocked_db.insert_one(data)
+            else:
+                data = {"$set":{"blocked": False}}
+                blocked_db.update_one({"guild_id": ctx.guild.id}, data)
+            await ctx.respond("**Server was unblocked**", ephemeral=True)
+
         
       
 def setup(client):

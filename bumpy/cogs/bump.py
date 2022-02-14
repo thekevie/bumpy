@@ -1,9 +1,7 @@
-from discord.commands import slash_command, permissions
-from discord.ext import commands
-from discord.ui import Button, View
-import discord
+from diskord.ext import commands
+from diskord.ui import Button, View
+import diskord
 import datetime
-import os
 
 import pymongo
 from main import read_config
@@ -38,13 +36,13 @@ class bump(commands.Cog):
         else:
           return 0
 
-    @slash_command(description="Command to bumps your server")
+    @diskord.application.slash_command(description="Command to bumps your server")
     async def bump(self, ctx):
       blocked = blocked_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "blocked": 1})
       if blocked is None:
         pass
       elif blocked["blocked"] is True:
-        em = discord.Embed(title='Your server has been blocked', color=discord.Color.blue())
+        em = diskord.Embed(title='Your server has been blocked', color=diskord.Color.blue())
         await ctx.respond(embed=em)
         return
 
@@ -55,19 +53,19 @@ class bump(commands.Cog):
         db = settings_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
         
       if not db["status"] == "ON":
-        em = discord.Embed(title='Command has been disabled', color=discord.Color.blue())
+        em = diskord.Embed(title='Command has been disabled', color=diskord.Color.blue())
         em.set_footer(text='Use /settings to turn it on again')
         await ctx.respond(embed=em)
         return
       
       if db["description"] is None:
-        em = discord.Embed(title='No server description found\n/settings to add one', color=discord.Color.blue())
+        em = diskord.Embed(title='No server description found\n/settings to add one', color=diskord.Color.blue())
         em.set_footer(text='/support')
         await ctx.respond(embed=em)
         return
 
       if db["bump_channel"] is None:
-        em = discord.Embed(title='No bump channel found\n/settings to add one', color=discord.Color.blue())
+        em = diskord.Embed(title='No bump channel found\n/settings to add one', color=diskord.Color.blue())
         em.set_footer(text='/support')
         await ctx.respond(embed=em)
         return
@@ -86,7 +84,7 @@ class bump(commands.Cog):
           
         if not minutes == 0:
           minutes = round(minutes)
-          em = discord.Embed(title=f"Server on cooldown", description=f"You can bump again in {minutes} minutes.", color=discord.Color.red())
+          em = diskord.Embed(title=f"Server on cooldown", description=f"You can bump again in {minutes} minutes.", color=diskord.Color.red())
           em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
           em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
           await ctx.respond(embed=em)
@@ -98,7 +96,7 @@ class bump(commands.Cog):
           ratelimit_db.update_one({"guild_id": ctx.guild.id}, data)
           
 
-      em = discord.Embed(title='Bumping!', description='Your server is beening bumped', color=discord.Color.blue())
+      em = diskord.Embed(title='Bumping!', description='Your server is beening bumped', color=diskord.Color.blue())
       em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
       em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
       await ctx.respond(embed=em)
@@ -122,12 +120,12 @@ class bump(commands.Cog):
             
               description = db["description"]
               if description is None:
-                em = discord.Embed(title='Server Description Is None', color=discord.Color.blue())
+                em = diskord.Embed(title='Server Description Is None', color=diskord.Color.blue())
                 em.set_footer(text='Use /settings and add an Server Description')
                 await ctx.send(embed=em)
                 return
 
-              bump_em = discord.Embed(color=discord.Colour.blue())
+              bump_em = diskord.Embed(color=diskord.Colour.blue())
               bump_em.add_field(name='**Description**', value=description, inline=False)
               bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
               bump_em.add_field(name="**Channels**", value=str(len(ctx.guild.channels)), inline=True)
@@ -135,7 +133,7 @@ class bump(commands.Cog):
               bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
               bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
               
-              button = Button(label="Join Server", style=discord.ButtonStyle.url, url=f"{invite}")
+              button = Button(label="Join Server", style=diskord.ButtonStyle.url, url=f"{invite}")
               view = View()
               view.add_item(button)
 
@@ -145,7 +143,7 @@ class bump(commands.Cog):
                 pass
           
           
-      em = discord.Embed(title='Bumped!', description='Your server has been bumped', color=discord.Color.green())
+      em = diskord.Embed(title='Bumped!', description='Your server has been bumped', color=diskord.Color.green())
       em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
       em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
       await ctx.send(embed=em)
