@@ -146,7 +146,7 @@ class bump(commands.Cog):
       em = diskord.Embed(title='Bumped!', description='Your server has been bumped', color=diskord.Color.green())
       em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
       em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
-      await ctx.send(embed=em)
+      await ctx.channel.send(embed=em)
       
       stats = stats_db.find_one({}, {"_id": 1, "bumps": 1})
       if stats is None:
