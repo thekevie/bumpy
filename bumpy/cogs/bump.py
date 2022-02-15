@@ -23,12 +23,12 @@ class bump(commands.Cog):
         rate = ratelimit_db.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
         
         if rate is None:
-          ago = datetime.datetime.now() - datetime.timedelta(minutes=30)
+          ago = datetime.datetime.utcnow() - datetime.timedelta(minutes=30)
           data = {"guild_id": guild.id, "cooldown": ago}
           ratelimit_db.insert_one(data)
           return 0
           
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
         then = rate["cooldown"]
         while now <= then:    
           left = then - now
