@@ -20,6 +20,11 @@ class info(commands.Cog):
       em.add_field(name="⠀", value="[Terms Of Service](https://github.com/thekevie/bumpy/blob/main/TERMS.md)\n[Privacy Policy](https://github.com/thekevie/bumpy/blob/main/PRIVACY.md)\n[Rules](https://github.com/thekevie/bumpy/blob/main/RULES.md)\n")
       await ctx.respond(embed=em, ephemeral=True)
       
+    @diskord.application.slash_command(description="Invite me to your server")
+    async def invite(self, ctx):
+      em = diskord.embed(description=f"[Invite](https://dsc.gg/bumpy)")
+      await ctx.respond(embed=em, ephemeral=True)
+      
     @diskord.application.slash_command(description="The stats for bumpy")
     async def stats(self, ctx):
       mongo = db.command("dbstats")
@@ -36,7 +41,7 @@ class info(commands.Cog):
       em = diskord.Embed(title="Bumpy Statistics", color=diskord.Colour.blue())
       em.add_field(name="Servers", value=len(self.client.guilds), inline=False)
       em.add_field(name="Language", value=f"Python {sys.version[0]}", inline=False)
-      em.add_field(name="Pycord", value=diskord.__version__, inline=False)
+      em.add_field(name="diskord", value=diskord.__version__, inline=False)
       em.add_field(name="Memory Used", value=f"{dataSize} MB | {procent}%", inline=False)
       em.add_field(name="Total Bumps", value=bumps, inline=False)
       await ctx.respond(embed=em, ephemeral=True)
