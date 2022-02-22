@@ -60,7 +60,7 @@ class report(commands.Cog):
         
     @diskord.application.slash_command(description="Block a server from bumpy", default_permission=False, guild_ids=[832743824181952534])
     @commands.is_owner()
-    @diskord.application.option('type', choice=[
+    @diskord.application.option('type', choices=[
         diskord.OptionChoice(name='add', value='add'),
         diskord.OptionChoice(name='remove', value='remove'),
     ])
