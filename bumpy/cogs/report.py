@@ -70,7 +70,6 @@ class report(commands.Cog):
             r = blocked_db.find_one({"guild_id": ctx.guild.id})
             
         res = r['blocked']
-        print(res)
         if res is False: 
             data = {"$set":{"blocked": True}}
             blocked_db.update_one({"guild_id": ctx.guild.id}, data)
