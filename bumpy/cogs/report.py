@@ -70,12 +70,13 @@ class report(commands.Cog):
             r = blocked_db.find_one({"guild_id": ctx.guild.id})
             
         res = r['blocked']
-        if res is True: 
+        print(res)
+        if res is False: 
             data = {"$set":{"blocked": True}}
             blocked_db.update_one({"guild_id": ctx.guild.id}, data)
             await ctx.respond("**Server was blocked**", ephemeral=True)
             
-        elif res is False:
+        elif res is True:
             data = {"$set":{"blocked": False}}
             blocked_db.update_one({"guild_id": ctx.guild.id}, data)
             await ctx.respond("**Server was unblocked**", ephemeral=True)
