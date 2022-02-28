@@ -22,7 +22,7 @@ class info(commands.Cog):
       
     @diskord.application.slash_command(description="Invite me to your server")
     async def invite(self, ctx):
-      em = diskord.embed(description=f"[Invite](https://dsc.gg/bumpy)")
+      em = diskord.Embed(description=f"[Invite](https://dsc.gg/bumpy)", colour=diskord.Colour.blue())
       await ctx.respond(embed=em, ephemeral=True)
       
     @diskord.application.slash_command(description="The stats for bumpy")
