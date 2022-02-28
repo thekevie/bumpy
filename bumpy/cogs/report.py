@@ -60,30 +60,24 @@ class report(commands.Cog):
         
     @diskord.application.slash_command(description="Block a server from bumpy", default_permission=False, guild_ids=[832743824181952534])
     @commands.is_owner()
-    @diskord.application.option('type', choices=[
-        diskord.OptionChoice(name='add', value='add'),
-        diskord.OptionChoice(name='remove', value='remove'),
-    ])
     @diskord.application.option('id')
-    async def block(self, ctx, type, id):
+    async def block(self, ctx, id):
         id = int(id)
         r = blocked_db.find_one({"guild_id": ctx.guild.id})
-        if type == "add": 
-            if r is None:
-                data = {"guild_id": id, "blocked": True}
-                blocked_db.insert_one(data)
-            else:
-                data = {"$set":{"blocked": True}}
-                blocked_db.update_one({"guild_id": ctx.guild.id}, data)
+        if r is None:
+            data = {"guild_id": id, "blocked": False}
+            blocked_db.insert_one(data)
+            r = blocked_db.find_one({"guild_id": ctx.guild.id})
+            
+        res = r['blocked']
+        if res is True: 
+            data = {"$set":{"blocked": True}}
+            blocked_db.update_one({"guild_id": ctx.guild.id}, data)
             await ctx.respond("**Server was blocked**", ephemeral=True)
             
-        elif type == "remove":
-            if r is None:
-                data = {"guild_id": id, "blocked": False}
-                blocked_db.insert_one(data)
-            else:
-                data = {"$set":{"blocked": False}}
-                blocked_db.update_one({"guild_id": ctx.guild.id}, data)
+        elif res is False:
+            data = {"$set":{"blocked": False}}
+            blocked_db.update_one({"guild_id": ctx.guild.id}, data)
             await ctx.respond("**Server was unblocked**", ephemeral=True)
 
         
