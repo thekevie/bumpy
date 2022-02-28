@@ -76,9 +76,8 @@ class report(commands.Cog):
             await ctx.respond("**Server was blocked**", ephemeral=True)
             
         elif res is True:
-            data = {"$set":{"blocked": False}}
-            blocked_db.update_one({"guild_id": ctx.guild.id}, data)
-            await ctx.respond("**Server was unblocked**", ephemeral=True)
+            blocked_db.delete_one({"guild_id": id})
+            await ctx.respond("**Server was unblocked**", ephemeral=True) 
 
         
       
