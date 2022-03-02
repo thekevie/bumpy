@@ -2,13 +2,12 @@ import diskord
 from diskord.ext import commands, tasks
 import asyncio
 import random
-
+import os
 from main import read_config
 
 import pymongo
-import topgg
 
-MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile='../x509-cert.pem')
+MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile="./X509-cert.pem")
 db = MongoClient.db["settings"]
 ratelimit_db = db["cooldown"]
 
@@ -19,22 +18,22 @@ class events(commands.Cog):
         
     @tasks.loop()
     async def status(self):
-      for status in random.sample(read_config["status"], 1):
+        for status in random.sample(read_config["status"], 1):
           
-        if status[0] == "Watching":
-            if status[1] == "Users":
-                await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=f"{len(self.client.users)} Users"))
-            elif status[1] == "Servers":
-                await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=f"{len(self.client.guilds)} Servers"))
-            else:  
-                await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=status[1]))
-        elif status[0] == "Playing":
-            await self.client.change_presence(activity=diskord.Game(name=status[1]))   
-        elif status[0] == "Listening":
-            await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.listening, name=status[1]))
-        elif status[0] == "Streaming":
-            await self.client.change_presence(activity=diskord.Streaming(name=status[1], url=status[2]))
-        await asyncio.sleep(10)
+            if status[0] == "Watching":
+                if status[1] == "Users":
+                    await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=f"{len(self.client.users)} Users"))
+                elif status[1] == "Servers":
+                    await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=f"{len(self.client.guilds)} Servers"))
+                else:  
+                    await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.watching, name=status[1]))
+            elif status[0] == "Playing":
+                await self.client.change_presence(activity=diskord.Game(name=status[1]))   
+            elif status[0] == "Listening":
+                await self.client.change_presence(activity=diskord.Activity(type=diskord.ActivityType.listening, name=status[1]))
+            elif status[0] == "Streaming":
+                await self.client.change_presence(activity=diskord.Streaming(name=status[1], url=status[2]))
+            await asyncio.sleep(10)
 
     @status.before_loop
     async def before_status(self):
@@ -49,6 +48,7 @@ class events(commands.Cog):
         if not self.client.user.id == 880766859534794764:
             return
       
+        return
         for x in db.find({},{"_id": 0, "guild_id": 1}):
             id = int(x["guild_id"])
             guild = self.client.get_guild(id)

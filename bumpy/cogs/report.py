@@ -6,7 +6,7 @@ import datetime
 import pymongo
 from main import read_config
 
-MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile='../x509-cert.pem')
+MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile="./X509-cert.pem")
 db = MongoClient.db
 blocked_db = db["blocked"]
 
