@@ -1,6 +1,6 @@
 # Config / Settings
 config.json
-.pem
+X509-cert.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
