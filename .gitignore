@@ -1,5 +1,6 @@
 # Config / Settings
 config.json
+.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

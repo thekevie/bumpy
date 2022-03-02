@@ -8,7 +8,7 @@ from main import read_config
 import pymongo
 import topgg
 
-MongoClient = pymongo.MongoClient(read_config['mongodb'])
+MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile='../x509-cert.pem')
 db = MongoClient.db["settings"]
 ratelimit_db = db["cooldown"]
 

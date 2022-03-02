@@ -6,7 +6,7 @@ import pymongo
 
 from main import read_config
 
-MongoClient = pymongo.MongoClient(read_config['mongodb'])
+MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile='../x509-cert.pem')
 db = MongoClient.db
 stats_db = db["stats"]
 
