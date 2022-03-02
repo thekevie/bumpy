@@ -1,5 +1,5 @@
 # Terms of Service
-## Last Changed: February 14 2022
+## Last Changed: March 2 2022
 
 Please read these Terms of Service ("Terms", "Terms of Service") and Rules ("Rules") for Bumpy ("Service"). The Service and Terms are created and managed by [Dev Squad](https://discord.gg/KcH28tRtBu) ("us", "we", "our")
 
