@@ -86,7 +86,7 @@ class bump(commands.Cog):
           minutes = round(minutes)
           em = diskord.Embed(title=f"Server on cooldown", description=f"You can bump again in {minutes} minutes.", color=diskord.Color.red())
           em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
-          em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
+          em.set_footer(text=read_config["footer"])
           await ctx.respond(embed=em)
           return
         
@@ -98,7 +98,7 @@ class bump(commands.Cog):
 
       em = diskord.Embed(title='Bumping!', description='Your server is beening bumped', color=diskord.Color.blue())
       em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
-      em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
+      em.set_footer(text=read_config["footer"])
       await ctx.respond(embed=em)
       
 
@@ -130,8 +130,16 @@ class bump(commands.Cog):
               bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
               bump_em.add_field(name="**Channels**", value=str(len(ctx.guild.channels)), inline=True)
               bump_em.add_field(name="**Emojis**", value=str(len(ctx.guild.emojis)), inline=True)
-              bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
-              bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
+              
+              try:  
+                bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
+              except:
+                bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})")
+                
+              try:
+                bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
+              except:
+                bump_em.set_footer(text=read_config["footer"])
               
               button = Button(label="Join Server", style=diskord.ButtonStyle.url, url=f"{invite}")
               view = View()
@@ -145,7 +153,7 @@ class bump(commands.Cog):
           
       em = diskord.Embed(title='Bumped!', description='Your server has been bumped', color=diskord.Color.green())
       em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
-      em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
+      em.set_footer(text=read_config["footer"])
       await ctx.channel.send(embed=em)
       
       stats = stats_db.find_one({}, {"_id": 1, "bumps": 1})
