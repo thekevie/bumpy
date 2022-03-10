@@ -5,7 +5,6 @@ import datetime
 
 import pymongo
 from main import read_config
-import topgg
 
 MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile="./X509-cert.pem")
 db = MongoClient.db
@@ -17,18 +16,17 @@ stats_db = db["stats"]
 class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.top = topgg.DBLClient(read_config["top"], autopost=True).set_data(client)
     
     def get_ratelimit(self, guild):
         rate = ratelimit_db.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
         
         if rate is None:
-          ago = datetime.datetime.utcnow() - datetime.timedelta(minutes=30)
+          ago = datetime.datetime.now() - datetime.timedelta(minutes=40)
           data = {"guild_id": guild.id, "cooldown": ago}
           ratelimit_db.insert_one(data)
           return 0
           
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now()
         then = rate["cooldown"]
         while now <= then:    
           left = then - now
@@ -70,22 +68,41 @@ class bump(commands.Cog):
         await ctx.respond(embed=em)
         return
       
-      self.top.default_bot_id = self.client.user.id
-      vote = await self.top.get_user_vote(ctx.author.id)
-
+      vote = None
+      top = None
+      dbl = None
+      
+      guild = self.client.get_guild(832743824181952534)
+      channel = guild.get_channel(951095386959929355)
+      guild = None
+      date = datetime.datetime.now() - datetime.timedelta(hours=12)
+      messages = channel.history(after=date) 
+      async for message in messages:
+        if message.mentions:
+          user = message.mentions[0]
+          if ctx.user == user:
+            if "top.gg" in message.content:
+              top = True
+            if "dbl" in message.content:
+              dbl = True
+            vote = True
+             
       ratelimit = self.get_ratelimit(ctx.guild)
       if not ratelimit is None:
         minutes = ratelimit // 60
 
         if vote is True:
-          minutes = minutes - 10
+          if top is True:
+            minutes = minutes - 10
+          if dbl is True:
+            minutes = minutes - 10
           if minutes < 0:
             minutes = 0
           
         if not minutes == 0:
           minutes = round(minutes)
           em = diskord.Embed(title=f"Server on cooldown", description=f"You can bump again in {minutes} minutes.", color=diskord.Color.red())
-          em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
+          em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) or [dbl](https://discordbotlist.com/bots/bumpy-5009) you get 10 minutes less cooldown')
           em.set_footer(text=read_config["footer"])
           await ctx.respond(embed=em)
           return
@@ -97,7 +114,7 @@ class bump(commands.Cog):
           
 
       em = diskord.Embed(title='Bumping!', description='Your server is beening bumped', color=diskord.Color.blue())
-      em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
+      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) or [dbl](https://discordbotlist.com/bots/bumpy-5009) you get 10 minutes less cooldown')
       em.set_footer(text=read_config["footer"])
       await ctx.respond(embed=em)
       
@@ -152,7 +169,7 @@ class bump(commands.Cog):
           
           
       em = diskord.Embed(title='Bumped!', description='Your server has been bumped', color=diskord.Color.green())
-      em.add_field(name='Note', value='If you [vote](https://top.gg/bot/880766859534794764/vote) you get 10 minutes less cooldown')
+      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) or [dbl](https://discordbotlist.com/bots/bumpy-5009) you get 10 minutes less cooldown')
       em.set_footer(text=read_config["footer"])
       await ctx.channel.send(embed=em)
       
