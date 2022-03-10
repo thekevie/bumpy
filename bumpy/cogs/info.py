@@ -50,6 +50,7 @@ class info(commands.Cog):
     async def vote(self, ctx):
       em = diskord.Embed(colour=diskord.Colour.green())
       em.add_field(name='**TOP.GG**', value='[Vote Here](https://top.gg/bot/880766859534794764/vote)', inline=False)
+      em.add_field(name='**dbl**', value='[Vote Here](https://discordbotlist.com/bots/bumpy-5009/upvote)', inline=False)
       await ctx.respond(embed=em, ephemeral=True)
       
 def setup(client):

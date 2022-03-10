@@ -102,7 +102,7 @@ class bump(commands.Cog):
         if not minutes == 0:
           minutes = round(minutes)
           em = diskord.Embed(title=f"Server on cooldown", description=f"You can bump again in {minutes} minutes.", color=diskord.Color.red())
-          em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) or [dbl](https://discordbotlist.com/bots/bumpy-5009) you get 10 minutes less cooldown')
+          em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) and [dbl](https://discordbotlist.com/bots/bumpy-5009/upvote) you get 20 minutes less cooldown')
           em.set_footer(text=read_config["footer"])
           await ctx.respond(embed=em)
           return
@@ -114,7 +114,7 @@ class bump(commands.Cog):
           
 
       em = diskord.Embed(title='Bumping!', description='Your server is beening bumped', color=diskord.Color.blue())
-      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) or [dbl](https://discordbotlist.com/bots/bumpy-5009) you get 10 minutes less cooldown')
+      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) and [dbl](https://discordbotlist.com/bots/bumpy-5009/upvote) you get 20 minutes less cooldown')
       em.set_footer(text=read_config["footer"])
       await ctx.respond(embed=em)
       
@@ -169,7 +169,7 @@ class bump(commands.Cog):
           
           
       em = diskord.Embed(title='Bumped!', description='Your server has been bumped', color=diskord.Color.green())
-      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) or [dbl](https://discordbotlist.com/bots/bumpy-5009) you get 10 minutes less cooldown')
+      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) and [dbl](https://discordbotlist.com/bots/bumpy-5009/upvote) you get 20 minutes less cooldown')
       em.set_footer(text=read_config["footer"])
       await ctx.channel.send(embed=em)
       
