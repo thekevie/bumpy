@@ -120,15 +120,18 @@ class menu(diskord.ui.View):
           return msg.author == interaction.user and msg.channel == interaction.channel
         
         try:
-          answer = await self.client.wait_for("message", check=check, timeout=60)
+          answer = await self.client.wait_for("message", check=check, timeout=180)
         except asyncio.TimeoutError:
           await interaction.followup.edit_message(message_id=message_id, content="**Timeout**", embed=None, view=None)     
           return    
         await answer.delete()
         description = answer.content
         
-        data = {"$set":{f"description": description}}
-        settings_db.update_one({"guild_id": interaction.guild.id}, data)
+        if len(description) > 1000:
+          await interaction.followup.send_message(content="Your description has more than 1000 characters")
+        else: 
+          data = {"$set":{f"description": description}}
+          settings_db.update_one({"guild_id": interaction.guild.id}, data)
         
         em = await get_data(self, interaction)
         view = menu(self.client)
