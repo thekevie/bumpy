@@ -148,7 +148,6 @@ class settings(commands.Cog):
       em = await get_data(self, ctx)
       client = self.client
       view = menu(client)
-      await ctx.respond("Command will be working soon again if you cant wait join the [support server]()")
       await ctx.respond(embed=em, view=view, ephemeral=True)
       
 def setup(client):
