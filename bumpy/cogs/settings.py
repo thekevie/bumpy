@@ -35,6 +35,7 @@ async def get_data(self, interaction):
 
 class menu(diskord.ui.View):
     def __init__(self, client):
+        super().__init__(timeout=120)
         self.client = client        
     
     @diskord.ui.button(label="Enabled",style=diskord.ButtonStyle.green, custom_id="enabled", row=0)
@@ -147,6 +148,7 @@ class settings(commands.Cog):
       em = await get_data(self, ctx)
       client = self.client
       view = menu(client)
+      await ctx.respond("Command will be working soon again if you cant wait join the [support server]()")
       await ctx.respond(embed=em, view=view, ephemeral=True)
       
 def setup(client):
