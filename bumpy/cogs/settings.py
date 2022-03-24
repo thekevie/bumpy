@@ -6,7 +6,7 @@ from main import read_config, db, db_settings, db_blocked, db_ratelimit, db_stat
 
 async def get_data(self, interaction):
   
-  db = self.settings.find_one({"guild_id": interaction.guild.id}, {"_id": 0})
+  db = db_settings.find_one({"guild_id": interaction.guild.id}, {"_id": 0})
   
   if db['bump_channel'] is None:
       bump_channel = None
