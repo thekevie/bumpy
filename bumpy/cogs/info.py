@@ -1,15 +1,8 @@
 from diskord.ext import commands
 import diskord
 import sys
-import os
-import pymongo
 
-from main import read_config
-
-MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile="./X509-cert.pem")
-db = MongoClient.db
-stats_db = db["stats"]
-
+from main import read_config, db, db_settings, db_blocked, db_ratelimit, db_stats, db_premium, db_codes
 class info(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -22,8 +15,8 @@ class info(commands.Cog):
       
     @diskord.application.slash_command(description="Invite me to your server")
     async def invite(self, ctx):
-      em = diskord.Embed(description=f"[Invite](https://dsc.gg/bumpy)", colour=diskord.Colour.blue())
-      await ctx.respond(embed=em, ephemeral=True)
+        em = diskord.Embed(description=f"[Invite](https://dsc.gg/bumpy)", colour=diskord.Colour.blue())
+        await ctx.respond(embed=em, ephemeral=True)
       
     @diskord.application.slash_command(description="The stats for bumpy")
     async def stats(self, ctx):
@@ -35,7 +28,7 @@ class info(commands.Cog):
       procent = used * 100
       procent = round(procent)
       
-      stats = stats_db.find_one({}, {"_id": 0, "bumps": 1})
+      stats = db_stats.find_one({}, {"_id": 0, "bumps": 1})
       bumps = stats["bumps"]
       
       em = diskord.Embed(title="Bumpy Statistics", color=diskord.Colour.blue())
@@ -48,10 +41,10 @@ class info(commands.Cog):
 
     @diskord.application.slash_command(description="Vote for the bot to get perks")
     async def vote(self, ctx):
-      em = diskord.Embed(colour=diskord.Colour.green())
-      em.add_field(name='**TOP.GG**', value='[Vote Here](https://top.gg/bot/880766859534794764/vote)', inline=False)
-      em.add_field(name='**dbl**', value='[Vote Here](https://discordbotlist.com/bots/bumpy-5009/upvote)', inline=False)
-      await ctx.respond(embed=em, ephemeral=True)
+        em = diskord.Embed(colour=diskord.Colour.green())
+        em.add_field(name='**TOP.GG**', value='[Vote Here](https://top.gg/bot/880766859534794764/vote)', inline=False)
+        em.add_field(name='**dbl**', value='[Vote Here](https://discordbotlist.com/bots/bumpy-5009/upvote)', inline=False)
+        await ctx.respond(embed=em, ephemeral=True)    
       
 def setup(client):
     client.add_cog(info(client))

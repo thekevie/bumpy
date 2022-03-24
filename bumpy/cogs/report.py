@@ -2,13 +2,9 @@ from diskord.ext import commands
 from diskord.ui import Button, View
 import diskord
 import datetime
+import time
 
-import pymongo
-from main import read_config
-
-MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile="./X509-cert.pem")
-db = MongoClient.db
-blocked_db = db["blocked"]
+from main import read_config, db, db_settings, db_blocked, db_ratelimit, db_stats, db_premium, db_codes
 
 class Confirm(diskord.ui.View):
     def __init__(self):
@@ -55,29 +51,37 @@ class report(commands.Cog):
             em.add_field(name="Reason", value=reason, inline=False)
             em.add_field(name="Date", value=datetime.datetime.now(), inline=False)
             em.set_footer(text=f"USER ID: {ctx.author.id}")
-            await channel.send(self.client.get_user(read_config["owners"][0]).mention, embed=em)
+            await channel.send(self.client.get_user(self.config["owners"][0]).mention, embed=em)
         else:
             return
         
     @diskord.application.slash_command(description="Block a server from bumpy", default_permission=False, guild_ids=[832743824181952534])
     @commands.is_owner()
     @diskord.application.option('id')
-    async def block(self, ctx, id):
+    @diskord.application.option('reason', required=False)
+    async def block(self, ctx, id, reason=None):
         id = int(id)
-        r = blocked_db.find_one({"guild_id": ctx.guild.id})
-        if r is None:
+        if not db_blocked.find_one({"guild_id": id}):
             data = {"guild_id": id, "blocked": False}
-            blocked_db.insert_one(data)
-            r = blocked_db.find_one({"guild_id": ctx.guild.id})
+            db_blocked.insert_one(data)
             
-        res = r['blocked']
-        if res is False: 
-            data = {"$set":{"blocked": True}}
-            blocked_db.update_one({"guild_id": ctx.guild.id}, data)
+        b_db = db_blocked.find_one({"guild_id": id})
+            
+        if b_db['blocked'] is False: 
+            data = {"$set":{"blocked": True, "reason": reason}}
+            db_blocked.update_one({"guild_id": id}, data)
             await ctx.respond("**Server was blocked**", ephemeral=True)
+            servers = db_settings.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
+            for server in servers:
+                channel = self.client.get_channel(server["bump_channel"])
+                async for message in channel.history():
+                    for embed in message.embeds:
+                        if str(id) in embed.author.name:
+                            await message.delete()
+                            time.sleep(3)
             
-        elif res is True:
-            blocked_db.delete_one({"guild_id": id})
+        elif b_db['blocked'] is True:
+            db_blocked.delete_one({"guild_id": id})
             await ctx.respond("**Server was unblocked**", ephemeral=True) 
 
         

@@ -3,27 +3,19 @@ from diskord.ui import Button, View
 import diskord
 import datetime
 
-import pymongo
-from main import read_config
-
-MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile="./X509-cert.pem")
-db = MongoClient.db
-settings_db = db["settings"]
-blocked_db = db["blocked"]
-ratelimit_db = db["cooldown"]
-stats_db = db["stats"]
+from main import read_config, db, db_settings, db_blocked, db_ratelimit, db_stats, db_premium, db_codes
 
 class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
     
     def get_ratelimit(self, guild):
-        rate = ratelimit_db.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
+        rate = db_ratelimit.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
         
         if rate is None:
           ago = datetime.datetime.now() - datetime.timedelta(minutes=40)
           data = {"guild_id": guild.id, "cooldown": ago}
-          ratelimit_db.insert_one(data)
+          db_ratelimit.insert_one(data)
           return 0
           
         now = datetime.datetime.now()
@@ -36,19 +28,24 @@ class bump(commands.Cog):
 
     @diskord.application.slash_command(description="Command to bumps your server")
     async def bump(self, ctx):
-      blocked = blocked_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "blocked": 1})
+      blocked = db_blocked.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "blocked": 1})
       if blocked is None:
         pass
       elif blocked["blocked"] is True:
-        em = diskord.Embed(title='Your server has been blocked', color=diskord.Color.blue())
+        if not db_blocked.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "reason": 1}):
+          reason = "Not provided"
+        else:
+          reason = blocked["reason"]
+        em = diskord.Embed(title='Your server has been blocked', description="If you want to appeal your ban join the [support server](https://discord.gg/KcH28tRtBu)", color=diskord.Color.blue())
+        em.add_field(name="Reason", value=reason, inline=False)
         await ctx.respond(embed=em)
         return
 
-      db = settings_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
+      db = db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
       if db is None:
         data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None}
-        settings_db.insert_one(data)
-        db = settings_db.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
+        db_settings.insert_one(data)
+        db = db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
         
       if not db["status"] == "ON":
         em = diskord.Embed(title='Command has been disabled', color=diskord.Color.blue())
@@ -110,8 +107,7 @@ class bump(commands.Cog):
         else: 
           then = datetime.datetime.now() + datetime.timedelta(minutes=30)
           data = {"$set":{"cooldown": then}}
-          ratelimit_db.update_one({"guild_id": ctx.guild.id}, data)
-          
+          db_ratelimit.update_one({"guild_id": ctx.guild.id}, data)
 
       em = diskord.Embed(title='Bumping!', description='Your server is beening bumped', color=diskord.Color.blue())
       em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) and [dbl](https://discordbotlist.com/bots/bumpy-5009/upvote) you get 20 minutes less cooldown')
@@ -125,7 +121,7 @@ class bump(commands.Cog):
       
       invite = await invite_channel.create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
       
-      channel_ids = settings_db.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
+      channel_ids = db_settings.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
       
       for item in channel_ids:
         if not item["bump_channel"] is None:
@@ -173,17 +169,17 @@ class bump(commands.Cog):
       em.set_footer(text=read_config["footer"])
       await ctx.channel.send(embed=em)
       
-      stats = stats_db.find_one({}, {"_id": 1, "bumps": 1})
+      stats = db_stats.find_one({}, {"_id": 1, "bumps": 1})
       if stats is None:
         data = {"bumps": 0}
-        stats_db.insert_one(data)
-        stats = stats_db.find_one({}, {"_id": 1, "bumps": 1})
+        db_stats.insert_one(data)
+        stats = db_stats.find_one({}, {"_id": 1, "bumps": 1})
         
       amount = stats["bumps"]     
       amount = amount + 1 
       
       data = {"$set":{f"bumps": amount}}
-      stats_db.update_one({"_id": stats["_id"]}, data)
+      db_stats.update_one({"_id": stats["_id"]}, data)
       
 def setup(client):
     client.add_cog(bump(client))

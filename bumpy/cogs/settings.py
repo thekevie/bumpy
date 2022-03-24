@@ -1,20 +1,12 @@
 from diskord.ext import commands
-from diskord.ui import Button, View
 import diskord
 import asyncio
 
-import pymongo
-
-from main import read_config
-
-MongoClient = pymongo.MongoClient(read_config['mongodb'], tls=True, tlsCertificateKeyFile="./X509-cert.pem")
-db = MongoClient.db
-settings_db = db["settings"]
-stats_db = db["stats"]
+from main import read_config, db, db_settings, db_blocked, db_ratelimit, db_stats, db_premium, db_codes
 
 async def get_data(self, interaction):
   
-  db = settings_db.find_one({"guild_id": interaction.guild.id}, {"_id": 0})
+  db = self.settings.find_one({"guild_id": interaction.guild.id}, {"_id": 0})
   
   if db['bump_channel'] is None:
       bump_channel = None
@@ -43,13 +35,12 @@ async def get_data(self, interaction):
 
 class menu(diskord.ui.View):
     def __init__(self, client):
-        super().__init__(timeout=120)
-        self.client = client
+        self.client = client        
     
     @diskord.ui.button(label="Enabled",style=diskord.ButtonStyle.green, custom_id="enabled", row=0)
     async def on_button_callback(self, button, interaction):      
         data = {"$set":{"status": "ON"}}
-        settings_db.update_one({"guild_id": interaction.guild.id}, data)  
+        db_settings.update_one({"guild_id": interaction.guild.id}, data)  
 
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -58,7 +49,7 @@ class menu(diskord.ui.View):
     @diskord.ui.button(label="Disabled",style=diskord.ButtonStyle.red, custom_id="disabled", row=0)
     async def off_button_callback(self, button, interaction):
         data = {"$set":{"status": "OFF"}}
-        settings_db.update_one({"guild_id": interaction.guild.id}, data)
+        db_settings.update_one({"guild_id": interaction.guild.id}, data)
 
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -82,7 +73,7 @@ class menu(diskord.ui.View):
         channel_id = answer.channel_mentions[0].id
         
         data = {"$set":{f"bump_channel": channel_id}}
-        settings_db.update_one({"guild_id": interaction.guild.id}, data)
+        db_settings.update_one({"guild_id": interaction.guild.id}, data)
       
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -105,7 +96,7 @@ class menu(diskord.ui.View):
         channel_id = answer.channel_mentions[0].id
         
         data = {"$set":{f"invite_channel": channel_id}}
-        settings_db.update_one({"guild_id": interaction.guild.id}, data)
+        db_settings.update_one({"guild_id": interaction.guild.id}, data)
       
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -131,7 +122,7 @@ class menu(diskord.ui.View):
           await interaction.followup.send_message(content="Your description has more than 1000 characters")
         else: 
           data = {"$set":{f"description": description}}
-          settings_db.update_one({"guild_id": interaction.guild.id}, data)
+          db_settings.update_one({"guild_id": interaction.guild.id}, data)
         
         em = await get_data(self, interaction)
         view = menu(self.client)
@@ -148,10 +139,10 @@ class settings(commands.Cog):
     @diskord.application.slash_command(description="A command to change the settings")
     @commands.has_permissions(manage_guild=True)
     async def settings(self, ctx):
-      r = settings_db.find_one({"guild_id": ctx.guild.id})
+      r = self.settings.find_one({"guild_id": ctx.guild.id})
       if r is None:
         data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None}
-        settings_db.insert_one(data)
+        db_settings.insert_one(data)
         
       em = await get_data(self, ctx)
       client = self.client
