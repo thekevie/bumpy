@@ -139,7 +139,7 @@ class settings(commands.Cog):
     @diskord.application.slash_command(description="A command to change the settings")
     @commands.has_permissions(manage_guild=True)
     async def settings(self, ctx):
-      r = self.settings.find_one({"guild_id": ctx.guild.id})
+      r = db_settings.find_one({"guild_id": ctx.guild.id})
       if r is None:
         data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None}
         db_settings.insert_one(data)
