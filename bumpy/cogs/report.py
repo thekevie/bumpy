@@ -4,7 +4,7 @@ import diskord
 import datetime
 import time
 
-from main import read_config, db, db_settings, db_blocked, db_ratelimit, db_stats, db_premium, db_codes
+from main import read_config, db, check, add_command_stats, db_settings, db_blocked
 
 class Confirm(diskord.ui.View):
     def __init__(self):
@@ -31,6 +31,7 @@ class report(commands.Cog):
     @diskord.application.option('id', description="Send the Guild ID for the server you want to report")
     @diskord.application.option('reason', description="The reason for the report")
     async def report(self, ctx, id, reason):
+        add_command_stats("report")
         id = int(id)
         em = diskord.Embed(title="Report", description="By pushing the **Confirm** button you agree on being message by the bumpy support team. Here is the report check so everything is right.", color=diskord.Colour.blue())
         em.add_field(name="Guild Name", value=self.client.get_guild(id).name)
@@ -51,11 +52,11 @@ class report(commands.Cog):
             em.add_field(name="Reason", value=reason, inline=False)
             em.add_field(name="Date", value=datetime.datetime.now(), inline=False)
             em.set_footer(text=f"USER ID: {ctx.author.id}")
-            await channel.send(self.client.get_user(self.config["owners"][0]).mention, embed=em)
+            await channel.send(self.client.get_user(read_config["owners"][0]).mention, embed=em)
         else:
             return
         
-    @diskord.application.slash_command(description="Block a server from bumpy", default_permission=False, guild_ids=[832743824181952534])
+    @diskord.application.slash_command(description="Block a server from bumpy", guild_ids=[832743824181952534])
     @commands.is_owner()
     @diskord.application.option('id')
     @diskord.application.option('reason', required=False)

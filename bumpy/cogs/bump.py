@@ -1,185 +1,141 @@
+from http import server
+from logging import exception
+from webbrowser import get
 from diskord.ext import commands
-from diskord.ui import Button, View
 import diskord
+
 import datetime
 
-from main import read_config, db, db_settings, db_blocked, db_ratelimit, db_stats, db_premium, db_codes
+from main import read_config, db, check, add_command_stats, db_settings, db_blocked
 
+def check_blocked(guild_id):
+    if not db_blocked.find_one({"guild_id": guild_id}, {"_id": 0, "blocked": 1}):
+        return False, None
+    blocked = db_blocked.find_one({"guild_id": guild_id}, {"blocked": 1})
+    if blocked["reason"]:
+        reason = blocked["reason"]
+    else:
+        reason = "Not Provided"
+    return True, reason
+
+def check_for_server(ctx):
+    settings = db_settings.find_one({"guild_id": ctx.guild.id})
+    
+    if settings["status"] == "OFF":
+        return False, "Command has been disabled"
+    if settings["bump_channel"] is None:
+        return False, "Bump Channel was not found"
+    if settings["description"] is None:
+        return False, "Server Description was not found"
+    if not ctx.guild.get_channel(settings["bump_channel"]):
+        return False, "Bump Channel was not found"
+    return True, None
+    
+async def check_ratelimit(ctx, client):        
+    channel = client.get_channel(951095386959929355)
+    date = datetime.datetime.now() - datetime.timedelta(hours=12)
+    top = None
+    dbl = None
+    async for message in channel.history(after=date):
+        user = message.mentions[0]
+        if ctx.user == user:
+            if "top.gg" in message.content:
+                top = True
+            if "dbl" in message.content:
+                dbl = True
+    
+    rate = db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "cooldown": 1})
+    if rate["cooldown"] is None:
+        then = datetime.datetime.now() + datetime.timedelta(minutes=read_config["cooldown"])
+        data = {"$set":{"cooldown": then}}
+        db_settings.update_one({"guild_id": ctx.guild.id}, data)
+        return True, None 
+                
+    if datetime.datetime.now() <= rate["cooldown"]:
+        left = rate["cooldown"] - datetime.datetime.now()
+        seconds = left.total_seconds()
+        minutes = seconds // 60
+        
+        if top is True:
+            minutes = minutes - read_config["top"]
+        if dbl is True:
+            minutes = minutes - read_config["dbl"]            
+            
+        em = diskord.Embed(title="Server on Cooldown", description=f"You can bump again in {round(minutes)} minutes.", color=diskord.Colour.red())
+        em.add_field(name="Note", value=read_config["note"], inline=False)
+        em.set_footer(text=read_config["footer"])
+        return False, em
+    else:
+        then = datetime.datetime.now() + datetime.timedelta(minutes=read_config["cooldown"])
+        data = {"$set":{"cooldown": then}}
+        db_settings.update_one({"guild_id": ctx.guild.id}, data)
+        return True, None        
+            
+async def get_server(ctx):
+    settings = db_settings.find_one({"guild_id": ctx.guild.id})
+    invite_channel = ctx.guild.get_channel(settings["invite_channel"])
+    if not invite_channel:
+        invite_channel = ctx.guild.text_channels[0]   
+    invite = await invite_channel.create_invite(unique=False, max_age=0, max_uses=0, temporary=False)
+    
+    em = diskord.Embed(color=diskord.Colour.blue())
+    em.add_field(name="Description", value=settings["description"], inline=False)
+    em.add_field(name="Members", value=len(ctx.guild.members), inline=True)
+    em.add_field(name="Channels", value=len(ctx.guild.channels), inline=True)
+    em.add_field(name="Categories", value=len(ctx.guild.categories), inline=True)
+    em.add_field(name="Emojis", value=len(ctx.guild.emojis), inline=False) #[emoji for emoji in ctx.guild.id]
+    
+    button = diskord.ui.Button(label="Join Server", style=diskord.ButtonStyle.url, url=f"{invite}")
+    view = diskord.ui.View()
+    view.add_item(button)
+    return em, view
+                
 class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
-    
-    def get_ratelimit(self, guild):
-        rate = db_ratelimit.find_one({"guild_id": guild.id}, {"_id": 0, "cooldown": 1})
         
-        if rate is None:
-          ago = datetime.datetime.now() - datetime.timedelta(minutes=40)
-          data = {"guild_id": guild.id, "cooldown": ago}
-          db_ratelimit.insert_one(data)
-          return 0
-          
-        now = datetime.datetime.now()
-        then = rate["cooldown"]
-        while now <= then:    
-          left = then - now
-          return left.total_seconds()
-        else:
-          return 0
-
-    @diskord.application.slash_command(description="Command to bumps your server")
+    @diskord.application.slash_command(name="bump")
     async def bump(self, ctx):
-      blocked = db_blocked.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "blocked": 1})
-      if blocked is None:
-        pass
-      elif blocked["blocked"] is True:
-        if not db_blocked.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "reason": 1}):
-          reason = "Not provided"
-        else:
-          reason = blocked["reason"]
-        em = diskord.Embed(title='Your server has been blocked', description="If you want to appeal your ban join the [support server](https://discord.gg/KcH28tRtBu)", color=diskord.Color.blue())
-        em.add_field(name="Reason", value=reason, inline=False)
-        await ctx.respond(embed=em)
-        return
-
-      db = db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
-      if db is None:
-        data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None}
-        db_settings.insert_one(data)
-        db = db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
+        check(ctx)
+        cb, reason = check_blocked(ctx.guild.id)
+        if cb is True:
+            em = diskord.Embed(title="Your server has been banned", description="If you want to appeal your ban [click here](https://discord.gg/KcH28tRtBu)", color=diskord.Colour.red())
+            em.add_field(name="Reason", value=reason, inline=False)
+            await ctx.respond(embed=em)
+            return
+        cfs, response = check_for_server(ctx)
+        if cfs is False:
+            em = diskord.Embed(title=response, color=diskord.Colour.red())
+            await ctx.respond(embed=em)
+            return
         
-      if not db["status"] == "ON":
-        em = diskord.Embed(title='Command has been disabled', color=diskord.Color.blue())
-        em.set_footer(text='Use /settings to turn it on again')
-        await ctx.respond(embed=em)
-        return
-      
-      if db["description"] is None:
-        em = diskord.Embed(title='No server description found\n/settings to add one', color=diskord.Color.blue())
-        em.set_footer(text='/support')
-        await ctx.respond(embed=em)
-        return
-
-      if db["bump_channel"] is None:
-        em = diskord.Embed(title='No bump channel found\n/settings to add one', color=diskord.Color.blue())
-        em.set_footer(text='/support')
-        await ctx.respond(embed=em)
-        return
-      
-      vote = None
-      top = None
-      dbl = None
-      
-      guild = self.client.get_guild(832743824181952534)
-      channel = guild.get_channel(951095386959929355)
-      guild = None
-      date = datetime.datetime.now() - datetime.timedelta(hours=12)
-      messages = channel.history(after=date) 
-      async for message in messages:
-        if message.mentions:
-          user = message.mentions[0]
-          if ctx.user == user:
-            if "top.gg" in message.content:
-              top = True
-            if "dbl" in message.content:
-              dbl = True
-            vote = True
-             
-      ratelimit = self.get_ratelimit(ctx.guild)
-      if not ratelimit is None:
-        minutes = ratelimit // 60
-
-        if vote is True:
-          if top is True:
-            minutes = minutes - 10
-          if dbl is True:
-            minutes = minutes - 10
-          if minutes < 0:
-            minutes = 0
-          
-        if not minutes == 0:
-          minutes = round(minutes)
-          em = diskord.Embed(title=f"Server on cooldown", description=f"You can bump again in {minutes} minutes.", color=diskord.Color.red())
-          em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) and [dbl](https://discordbotlist.com/bots/bumpy-5009/upvote) you get 20 minutes less cooldown')
-          em.set_footer(text=read_config["footer"])
-          await ctx.respond(embed=em)
-          return
+        status, res = await check_ratelimit(ctx, self.client)
+        if status is False:
+            await ctx.respond(embed=res)
+            return
         
-        else: 
-          then = datetime.datetime.now() + datetime.timedelta(minutes=30)
-          data = {"$set":{"cooldown": then}}
-          db_ratelimit.update_one({"guild_id": ctx.guild.id}, data)
-
-      em = diskord.Embed(title='Bumping!', description='Your server is beening bumped', color=diskord.Color.blue())
-      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) and [dbl](https://discordbotlist.com/bots/bumpy-5009/upvote) you get 20 minutes less cooldown')
-      em.set_footer(text=read_config["footer"])
-      await ctx.respond(embed=em)
-      
-
-      invite_channel = self.client.get_channel(db["invite_channel"])
-      if not invite_channel:
-        invite_channel = ctx.guild.text_channels[0]
-      
-      invite = await invite_channel.create_invite(unique=False, max_age = 0, max_uses = 0, temporary=False)
-      
-      channel_ids = db_settings.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
-      
-      for item in channel_ids:
-        if not item["bump_channel"] is None:
-          channel = self.client.get_channel(item["bump_channel"])
-          if not channel is None:
-
-            status = item["status"]
-            if status == "ON":
-            
-              description = db["description"]
-              if description is None:
-                em = diskord.Embed(title='Server Description Is None', color=diskord.Color.blue())
-                em.set_footer(text='Use /settings and add an Server Description')
-                await ctx.send(embed=em)
-                return
-
-              bump_em = diskord.Embed(color=diskord.Colour.blue())
-              bump_em.add_field(name='**Description**', value=description, inline=False)
-              bump_em.add_field(name='**Members**', value=str(len(ctx.guild.members)), inline=True)
-              bump_em.add_field(name="**Channels**", value=str(len(ctx.guild.channels)), inline=True)
-              bump_em.add_field(name="**Emojis**", value=str(len(ctx.guild.emojis)), inline=True)
-              
-              try:  
-                bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
-              except:
-                bump_em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})")
-                
-              try:
-                bump_em.set_footer(text=read_config["footer"], icon_url=ctx.guild.icon.url)
-              except:
-                bump_em.set_footer(text=read_config["footer"])
-              
-              button = Button(label="Join Server", style=diskord.ButtonStyle.url, url=f"{invite}")
-              view = View()
-              view.add_item(button)
-
-              try:
-                await channel.send(embed=bump_em, view=view)
-              except Exception:
-                pass
-          
-          
-      em = diskord.Embed(title='Bumped!', description='Your server has been bumped', color=diskord.Color.green())
-      em.add_field(name='Note', value='If you vote on [top.gg](https://top.gg/bot/880766859534794764/vote) and [dbl](https://discordbotlist.com/bots/bumpy-5009/upvote) you get 20 minutes less cooldown')
-      em.set_footer(text=read_config["footer"])
-      await ctx.channel.send(embed=em)
-      
-      stats = db_stats.find_one({}, {"_id": 1, "bumps": 1})
-      if stats is None:
-        data = {"bumps": 0}
-        db_stats.insert_one(data)
-        stats = db_stats.find_one({}, {"_id": 1, "bumps": 1})
+        em = diskord.Embed(title="Bumping!", description="The server is beening bumped", color=diskord.Colour.blue())
+        em.add_field(name="Note", value=read_config["note"], inline=False)
+        em.set_footer(text=read_config["footer"])
+        await ctx.respond(embed=em)
         
-      amount = stats["bumps"]     
-      amount = amount + 1 
-      
-      data = {"$set":{f"bumps": amount}}
-      db_stats.update_one({"_id": stats["_id"]}, data)
-      
+        server_embed, server_button = await get_server(ctx)
+        
+        channel_ids = db_settings.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
+        for item in channel_ids:
+            channel = self.client.get_channel(item["bump_channel"])
+            if channel:
+                if item["status"] == "ON":
+                    try:
+                        await channel.send(embed=server_embed, view=server_button)
+                    except Exception:
+                        pass
+        
+        em = diskord.Embed(title="Bumped!", description="The server had been bumped.", color=diskord.Colour.green())
+        em.add_field(name="Note", value=read_config["note"], inline=False)
+        em.set_footer(text=read_config["footer"])
+        await ctx.channel.send(embed=em)
+        add_command_stats("bump")
+        
 def setup(client):
     client.add_cog(bump(client))

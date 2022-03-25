@@ -11,15 +11,48 @@ def read_config():
 
 read_config = read_config()
 
+def check(ctx):
+    if not db_settings.find_one({"guild_id": ctx.guild.id}):
+        data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None, "cooldown": None}
+        db_settings.insert_one(data) 
+    
+    if not db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "status": 1}):
+        db_settings.update_one({"guild_id": ctx.guild.id}, {"$set":{"status": "OFF"}})
+        
+    if not db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "bump_channel": 1}):
+        db_settings.update_one({"guild_id": ctx.guild.id}, {"$set":{"bump_channel": None}})
+        
+    if not db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "invite_channel": 1}):
+        db_settings.update_one({"guild_id": ctx.guild.id}, {"$set":{"invite_channel": None}})
+        
+    if not db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "description": 1}):
+        db_settings.update_one({"guild_id": ctx.guild.id}, {"$set":{"description": None}})
+    
+    if not db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "cooldown": 1}):
+        db_settings.update_one({"guild_id": ctx.guild.id}, {"$set":{"cooldown": None}})
+        
+    return db_settings.find_one({"guild_id": ctx.guild.id})
+
 MongoClient = pymongo.MongoClient(read_config['mongodb'])
 db = MongoClient.db
 
 db_settings = db["settings"]
 db_blocked = db["blocked"]
-db_ratelimit = db["cooldown"]
 db_stats = db["stats"]
 db_premium = db["premium"]
 db_codes = db["codes"]
+
+def add_command_stats(command):
+    if not db_stats.find_one({}, {"_id": 0, "bumps": 1, "commands": 1}):
+        data = {"bumps": 0, "commands": 0}
+        db_stats.insert_one(data)
+    stats = db_stats.find_one({}, {"bumps": 1, "commands": 1})    
+    data = {"$set":{"commands": stats["commands"] + 1}}
+    db_stats.update_one({"_id": stats["_id"]}, data)
+    if command == "bump":
+        data = {"$set":{"bumps": stats["bumps"] + 1}}
+        db_stats.update_one({"_id": stats["_id"]}, data)
+        
 
 intents = diskord.Intents.default()
 intents.members = True
