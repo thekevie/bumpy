@@ -79,11 +79,13 @@ async def get_server(ctx):
     invite = await invite_channel.create_invite(unique=False, max_age=0, max_uses=0, temporary=False)
     
     em = diskord.Embed(color=diskord.Colour.blue())
+    em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
     em.add_field(name="Description", value=settings["description"], inline=False)
     em.add_field(name="Members", value=len(ctx.guild.members), inline=True)
     em.add_field(name="Channels", value=len(ctx.guild.channels), inline=True)
     em.add_field(name="Categories", value=len(ctx.guild.categories), inline=True)
     em.add_field(name="Emojis", value=len(ctx.guild.emojis), inline=False) #[emoji for emoji in ctx.guild.id]
+    em.set_footer(text=read_config["footer"])
     
     button = diskord.ui.Button(label="Join Server", style=diskord.ButtonStyle.url, url=f"{invite}")
     view = diskord.ui.View()
