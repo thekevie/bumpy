@@ -105,13 +105,14 @@ class bump(commands.Cog):
             em.add_field(name="Reason", value=reason, inline=False)
             await ctx.respond(embed=em)
             return
+
         cfs, response = check_for_server(ctx)
         if cfs is False:
             em = diskord.Embed(title=response, color=diskord.Colour.red())
             await ctx.respond(embed=em)
             return
 
-        status, response = await bump_check(ctx)
+        status, response = await bump_check(ctx, self.client)
         if status is False:
             em = diskord.Embed(title=response, color=diskord.Colour.red())
             await ctx.respond(embed=em)
