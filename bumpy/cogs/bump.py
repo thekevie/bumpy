@@ -1,6 +1,3 @@
-from http import server
-from logging import exception
-from webbrowser import get
 from diskord.ext import commands
 import diskord
 
@@ -110,16 +107,16 @@ class bump(commands.Cog):
             em = diskord.Embed(title=response, color=diskord.Colour.red())
             await ctx.respond(embed=em)
             return
-        
-        status, res = await check_ratelimit(ctx, self.client)
-        if status is False:
-            await ctx.respond(embed=res)
-            return
-        
-        status, res = await bump_check(ctx)
+
+        status, response = await bump_check(ctx)
         if status is False:
             em = diskord.Embed(title=response, color=diskord.Colour.red())
             await ctx.respond(embed=em)
+            return
+        
+        status, response = await check_ratelimit(ctx, self.client)
+        if status is False:
+            await ctx.respond(embed=response)
             return
         
         em = diskord.Embed(title="Bumping!", description="The server is beening bumped", color=diskord.Colour.blue())
