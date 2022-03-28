@@ -47,7 +47,7 @@ async def bump_check(ctx):
     try:
         bump_channel = client.get_channel(settings["bump_channel"])
         await bump_channel.send("Checking for Bump Channel", delete_after=2)
-    except commands.ChannelNotFound or commands.MissingPermissions:
+    except diskord.NotFound or diskord.Forbidden:
         return False, "I dont have Permission or the channel do not exist"
     return True, None
 
