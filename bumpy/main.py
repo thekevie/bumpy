@@ -11,6 +11,15 @@ def read_config():
 
 read_config = read_config()
 
+MongoClient = pymongo.MongoClient(read_config['mongodb'])
+db = MongoClient.db
+
+db_settings = db["settings"]
+db_blocked = db["blocked"]
+db_stats = db["stats"]
+db_premium = db["premium"]
+db_codes = db["codes"]
+
 def check(ctx):
     if not db_settings.find_one({"guild_id": ctx.guild.id}):
         data = {"guild_id": ctx.guild.id, "status": "OFF", "bump_channel": None, "invite_channel": None, "description": None, "cooldown": None}
@@ -33,14 +42,14 @@ def check(ctx):
         
     return db_settings.find_one({"guild_id": ctx.guild.id})
 
-MongoClient = pymongo.MongoClient(read_config['mongodb'])
-db = MongoClient.db
-
-db_settings = db["settings"]
-db_blocked = db["blocked"]
-db_stats = db["stats"]
-db_premium = db["premium"]
-db_codes = db["codes"]
+async def bump_check(ctx):
+    settings = db_settings.find_one({"guild_id": ctx.guild.id})
+    try:
+        bump_channel = client.get_channel(settings["bump_channel"])
+        await bump_channel.send("Checking for Bump Channel", delete_after=2)
+    except diskord.HTTPException:
+        return False, "I dont have Permission or the channel do not exist"
+    return True, None
 
 def add_command_stats(command):
     if not db_stats.find_one({}, {"_id": 0, "bumps": 1, "commands": 1}):

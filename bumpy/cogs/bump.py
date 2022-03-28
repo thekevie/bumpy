@@ -6,7 +6,7 @@ import diskord
 
 import datetime
 
-from main import read_config, db, check, add_command_stats, db_settings, db_blocked
+from main import read_config, db, check, bump_check, add_command_stats, db_settings, db_blocked
 
 def check_blocked(guild_id):
     if not db_blocked.find_one({"guild_id": guild_id}, {"_id": 0, "blocked": 1}):
@@ -114,6 +114,12 @@ class bump(commands.Cog):
         status, res = await check_ratelimit(ctx, self.client)
         if status is False:
             await ctx.respond(embed=res)
+            return
+        
+        status, res = await bump_check(ctx)
+        if status is False:
+            em = diskord.Embed(title=response, color=diskord.Colour.red())
+            await ctx.respond(embed=em)
             return
         
         em = diskord.Embed(title="Bumping!", description="The server is beening bumped", color=diskord.Colour.blue())
