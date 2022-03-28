@@ -27,8 +27,8 @@ def check_for_server(ctx):
     if not ctx.guild.get_channel(settings["bump_channel"]):
         return False, "Bump Channel was not found"
     return True, None
-    
-async def check_ratelimit(ctx, client):        
+
+async def get_delay(ctx, client):
     channel = client.get_channel(951095386959929355)
     date = datetime.datetime.now() - datetime.timedelta(hours=12)
     top = None
@@ -43,10 +43,7 @@ async def check_ratelimit(ctx, client):
     
     rate = db_settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0, "cooldown": 1})
     if rate["cooldown"] is None:
-        then = datetime.datetime.now() + datetime.timedelta(minutes=read_config["cooldown"])
-        data = {"$set":{"cooldown": then}}
-        db_settings.update_one({"guild_id": ctx.guild.id}, data)
-        return True, None 
+        return 0 
                 
     if datetime.datetime.now() <= rate["cooldown"]:
         left = rate["cooldown"] - datetime.datetime.now()
@@ -56,11 +53,17 @@ async def check_ratelimit(ctx, client):
         if top is True:
             minutes = minutes - read_config["top"]
         if dbl is True:
-            minutes = minutes - read_config["dbl"]            
-            
-        em = diskord.Embed(title="Server on Cooldown", description=f"You can bump again in {round(minutes)} minutes.", color=diskord.Colour.red())
+            minutes = minutes - read_config["dbl"]
+        return minutes
+    return 0
+    
+    
+async def check_ratelimit(ctx, client):
+    left = await get_delay(ctx, client)
+
+    if 0 < left:      
+        em = diskord.Embed(title="Server on Cooldown", description=f"You can bump again in {round(left)} minutes.", color=diskord.Colour.red())
         em.add_field(name="Note", value=read_config["note"], inline=False)
-        em.set_footer(text=read_config["footer"])
         return False, em
     else:
         then = datetime.datetime.now() + datetime.timedelta(minutes=read_config["cooldown"])
@@ -121,7 +124,6 @@ class bump(commands.Cog):
         
         em = diskord.Embed(title="Bumping!", description="The server is beening bumped", color=diskord.Colour.blue())
         em.add_field(name="Note", value=read_config["note"], inline=False)
-        em.set_footer(text=read_config["footer"])
         await ctx.respond(embed=em)
         
         server_embed, server_button = await get_server(ctx)
@@ -138,7 +140,6 @@ class bump(commands.Cog):
         
         em = diskord.Embed(title="Bumped!", description="The server had been bumped.", color=diskord.Colour.green())
         em.add_field(name="Note", value=read_config["note"], inline=False)
-        em.set_footer(text=read_config["footer"])
         await ctx.channel.send(embed=em)
         add_command_stats("bump")
         
