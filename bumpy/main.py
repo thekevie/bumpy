@@ -42,12 +42,16 @@ def check(ctx):
         
     return db_settings.find_one({"guild_id": ctx.guild.id})
 
-async def bump_check(ctx):
+async def bump_check(ctx, client):
     settings = db_settings.find_one({"guild_id": ctx.guild.id})
     try:
         bump_channel = client.get_channel(settings["bump_channel"])
     except diskord.NotFound:
         return False, "That channel do not exist"
+
+    for role in ctx.guild.get_member(client.user.id).roles:
+        ov = bump_channel.overwrites_for(role)
+        print(ov) # Comming Soon
 
     try:
         await bump_channel.send("Checking for Bump Channel", delete_after=2)
