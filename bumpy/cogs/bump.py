@@ -95,7 +95,7 @@ class bump(commands.Cog):
         
     @diskord.application.slash_command(name="bump")
     async def bump(self, ctx):
-        check(ctx)
+        settings = check(ctx)
         cb, reason = check_blocked(ctx.guild.id)
         if cb is True:
             em = diskord.Embed(title="Your server has been banned", description="If you want to appeal your ban [click here](https://discord.gg/KcH28tRtBu)", color=diskord.Colour.red())
