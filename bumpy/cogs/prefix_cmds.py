@@ -1,7 +1,7 @@
 from diskord.ext import commands
 import diskord
 
-from main import read_config, db, check, add_command_stats, db_settings, db_blocked, db_stats, db_premium, db_codes
+from utils.functions import *
 
 class prefix_cmds(commands.Cog):
     def __init__(self, client):
