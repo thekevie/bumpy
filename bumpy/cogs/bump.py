@@ -6,7 +6,7 @@ class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-    @diskord.application.slash_command(name="bump")
+    @diskord.application.slash_command(name="bump", description="Push the server to more users server")
     async def bump(self, ctx):
         check_guild(ctx.guild.id, "bump")
         cb, reason = check_blocked(ctx.guild.id, ctx.user.id)

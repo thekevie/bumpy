@@ -34,7 +34,6 @@ class settings(commands.Cog):
         self.client = client
         
     @diskord.application.slash_command()
-    @commands.has_permissions(manage_guild=True)
     async def settings(self, ctx):
         pass
     
@@ -50,6 +49,7 @@ class settings(commands.Cog):
         await ctx.respond(embed=em)
     
     @settings.sub_command(name="invite-channel", description="Set your invite-channel")
+    @commands.has_permissions(manage_guild=True)
     @diskord.application.option("channel")
     async def _invite_channel(self, ctx, channel: diskord.TextChannel):
         add_command_stats("settings_invite_channel")
@@ -59,6 +59,7 @@ class settings(commands.Cog):
         await ctx.respond(f"*Invite Channel was set to <#{channel.id}>*")
     
     @settings.sub_command(name="bump-channel", description="Set your bump-channel")
+    @commands.has_permissions(manage_guild=True)
     @diskord.application.option("channel")
     async def _bump_channel(self, ctx, channel: diskord.TextChannel):
         add_command_stats("settings_bump_channel")
@@ -68,6 +69,7 @@ class settings(commands.Cog):
         await ctx.respond(f"*Bump Channel was set to <#{channel.id}>*")
     
     @settings.sub_command(name="description", description="Set your server-description")
+    @commands.has_permissions(manage_guild=True)
     @diskord.application.option("description")
     async def _description(self, ctx, description):
         add_command_stats("settings_description")

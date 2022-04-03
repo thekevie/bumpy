@@ -9,12 +9,23 @@ class premium(commands.Cog):
     def __init__(self, client):
         self.client = client
         
+    @diskord.application.slash_command(name="buy")
+    async def buy(self, ctx):
+        pass
+        
+    @buy.sub_command(name="premium", description="Buy Bumpy premium for a guild/user")
+    async def buy_premium_(self, ctx):
+        em = diskord.Embed(title="Buy Bumpy Premium", color=diskord.Color.blue())
+        em.description = f"If you want to buy Bumpy Premium join the [support server](https://discord.gg/KcH28tRtBu) and message `kevie#9091` to pay with paypal"
+        await ctx.respond(embed=em)
+        
     @diskord.application.slash_command(name="premium", guild_ids=[832743824181952534])
     @commands.is_owner()
     async def premium(self, ctx):
         pass
-    
+            
     @premium.sub_command(name="add", description="Add Bumpy premium to a guild/user")
+    @commands.is_owner()
     @diskord.application.option("id")
     @diskord.application.option("type", choices=[
         diskord.OptionChoice(name="User", value="user"),
@@ -50,6 +61,7 @@ class premium(commands.Cog):
             await ctx.respond(f"Guild: `{id}` now has premium that expires on *{expires}*")
     
     @premium.sub_command(name="set", description="Set Bumpy premium for a guild/user")
+    @commands.is_owner()
     @diskord.application.option("id")
     @diskord.application.option("type", choices=[
         diskord.OptionChoice(name="User", value="user"),
@@ -78,6 +90,7 @@ class premium(commands.Cog):
             await ctx.respond(f"Guild: `{id}` now has premium that expires on *{expires}*")
         
     @premium.sub_command(name="remove", description="Remove Bumpy premium from a guild/user")
+    @commands.is_owner()
     @diskord.application.option("id")
     @diskord.application.option("type", choices=[
         diskord.OptionChoice(name="User", value="user"),

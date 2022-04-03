@@ -34,7 +34,8 @@ class events(commands.Cog):
             guild_id = setting["guild_id"]
             guild = self.client.get_guild(guild_id)
             if not guild in self.client.guilds:
-                db.settings.delete_one({"guild_id": guild_id})
+                if not setting["premium.status"] is True:
+                    db.settings.delete_one({"guild_id": guild_id})
     
     @commands.Cog.listener()
     async def on_guild_leave(self, ctx):  
