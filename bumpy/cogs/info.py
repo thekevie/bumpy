@@ -88,6 +88,7 @@ class info(commands.Cog):
     @diskord.application.slash_command(name="userinfo", description="Get information about a user")
     @diskord.application.option("user", requierd=False)
     async def userinfo(self, ctx, user: diskord.User=None):
+        add_command_stats("userinfo")
         user = user or ctx.user
         username = f"**Name:** {user.display_name}#{user.discriminator}"
         userid = f"**User ID:** `{user.id}`"
@@ -100,6 +101,7 @@ class info(commands.Cog):
         
     @diskord.application.slash_command(name="serverinfo", description="Get information about the server")
     async def userinfo(self, ctx):
+        add_command_stats("serverinfo")
         guild = ctx.guild
         guildname = f"**Name:** {guild.name}"
         guildid = f"**Guild ID:** `{guild.id}`"
