@@ -51,14 +51,16 @@ class premium(commands.Cog):
             settings = check_user(id, "premium")
             expires = get_date(settings, total)
             db.settings.update_one({"user_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            expires = round(datetime.datetime.timestamp(expires))
+            if not expires is False:
+                expires = round(datetime.datetime.timestamp(expires))
             await ctx.respond(f"User: `{id}` now has premium that expires on <t:{expires}:D>")
             
         elif type == "guild":
             settings = check_guild(id, "premium")
             expires = get_date(settings, total)   
             db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            expires = round(datetime.datetime.timestamp(expires))
+            if not expires is False:
+                expires = round(datetime.datetime.timestamp(expires))
             await ctx.respond(f"Guild: `{id}` now has premium that expires on <t:{expires}:D>")
     
     @premium.sub_command(name="set", description="Set Bumpy premium for a guild/user")
@@ -83,13 +85,15 @@ class premium(commands.Cog):
         if type == "user":   
             check_user(id, "premium")                    
             db.settings.update_one({"user_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            expires = round(datetime.datetime.timestamp(expires))
+            if not expires is False:
+                expires = round(datetime.datetime.timestamp(expires))
             await ctx.respond(f"User: `{id}` now has premium that expires on <t:{expires}:D>")
             
         elif type == "guild":   
             check_guild(id, "premium")                    
             db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            expires = round(datetime.datetime.timestamp(expires))
+            if not expires is False:
+                expires = round(datetime.datetime.timestamp(expires))
             await ctx.respond(f"Guild: `{id}` now has premium that expires on <t:{expires}:D>")
         
     @premium.sub_command(name="remove", description="Remove Bumpy premium from a guild/user")
