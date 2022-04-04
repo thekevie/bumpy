@@ -3,14 +3,6 @@ import diskord
 
 from utils.functions import *
 
-def get_premium(settings):
-    if db.settings.find_one({"guild_id": settings["guild_id"], "premium":{"exists": True}}):
-        if settings["premium"]["status"] is True:
-            return "True"
-        else:
-            return "False"
-            
-
 def get_bump_channel(settings):
     if settings["bump_channel"] is None:
         return "None"
@@ -42,7 +34,7 @@ class settings(commands.Cog):
         add_command_stats("settings_view")
         settings = check_guild(ctx.guild.id, "settings")
         em = diskord.Embed(title="Server Settings", color=diskord.Colour.blue())        
-        em.add_field(name="Premium", value=get_premium(settings))
+        em.add_field(name="Premium", value=get_premium_server(ctx.guild.id))
         em.add_field(name="Bump-channel", value=get_bump_channel(settings))
         em.add_field(name="Invite-channel", value=get_invite_channel(settings))
         em.add_field(name="Description", value=get_description(settings))

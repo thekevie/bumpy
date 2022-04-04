@@ -84,6 +84,32 @@ class info(commands.Cog):
         
         em = diskord.Embed(title="Invite Bumpy to your server", color=diskord.Color.blue())
         await ctx.respond(embed=em, view=view)
+        
+    @diskord.application.slash_command(name="userinfo", description="Get information about a user")
+    @diskord.application.option("user", requierd=False)
+    async def userinfo(self, ctx, user: diskord.User=None):
+        user = user or ctx.user
+        username = f"**Name:** {user.display_name}#{user.discriminator}"
+        userid = f"**User ID:** `{user.id}`"
+        created = f"**Created:** <t:{round(datetime.datetime.timestamp(user.created_at))}:D>"
+        joined = f"**Joined:** <t:{round(datetime.datetime.timestamp(user.joined_at))}:D>"
+        premium = f"**Premium:** {get_premium_user(user.id)}"
+        em = diskord.Embed(color=diskord.Color.blue())
+        em.description = f"{username}\n{userid}\n{created}\n{joined}\n{premium}"
+        await ctx.respond(embed=em)
+        
+    @diskord.application.slash_command(name="serverinfo", description="Get information about the server")
+    async def userinfo(self, ctx):
+        guild = ctx.guild
+        guildname = f"**Name:** {guild.name}"
+        guildid = f"**Guild ID:** `{guild.id}`"
+        owner = f"**Owner:** {guild.owner.display_name}#{guild.owner.discriminator}"
+        members = f"**Members:** {(guild.member_count)}"
+        created = f"**Created:** <t:{round(datetime.datetime.timestamp(guild.created_at))}:D>"
+        premium = f"**Premium:** {get_premium_server(guild.id)}"
+        em = diskord.Embed(color=diskord.Color.blue())
+        em.description = f"{guildname}\n{guildid}\n{owner}\n{created}\n{premium}"
+        await ctx.respond(embed=em)
          
 def setup(client):
     client.add_cog(info(client))

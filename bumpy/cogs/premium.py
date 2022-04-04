@@ -1,4 +1,3 @@
-from calendar import month
 from diskord.ext import commands
 import diskord
 import datetime
@@ -52,13 +51,15 @@ class premium(commands.Cog):
             settings = check_user(id, "premium")
             expires = get_date(settings, total)
             db.settings.update_one({"user_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            await ctx.respond(f"User: `{id}` now has premium that expires on *{expires}*")
+            expires = round(datetime.datetime.timestamp(expires))
+            await ctx.respond(f"User: `{id}` now has premium that expires on <t:{expires}:D>")
             
         elif type == "guild":
             settings = check_guild(id, "premium")
             expires = get_date(settings, total)   
             db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            await ctx.respond(f"Guild: `{id}` now has premium that expires on *{expires}*")
+            expires = round(datetime.datetime.timestamp(expires))
+            await ctx.respond(f"Guild: `{id}` now has premium that expires on <t:{expires}:D>")
     
     @premium.sub_command(name="set", description="Set Bumpy premium for a guild/user")
     @commands.is_owner()
@@ -76,18 +77,20 @@ class premium(commands.Cog):
             expires = False
         else:
             expires = datetime.datetime.strptime(expires, "%Y-%m-%d")
-            if datetime.datetime.today() > expires:
+            if datetime.datetime.utcnow() > expires:
                 return await ctx.respond("This time has already been")
             
         if type == "user":   
             check_user(id, "premium")                    
             db.settings.update_one({"user_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            await ctx.respond(f"User: `{id}` now has premium that expires on *{expires}*")
+            expires = round(datetime.datetime.timestamp(expires))
+            await ctx.respond(f"User: `{id}` now has premium that expires on <t:{expires}:D>")
             
         elif type == "guild":   
             check_guild(id, "premium")                    
             db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
-            await ctx.respond(f"Guild: `{id}` now has premium that expires on *{expires}*")
+            expires = round(datetime.datetime.timestamp(expires))
+            await ctx.respond(f"Guild: `{id}` now has premium that expires on <t:*{expires}:D>")
         
     @premium.sub_command(name="remove", description="Remove Bumpy premium from a guild/user")
     @commands.is_owner()
@@ -104,7 +107,7 @@ class premium(commands.Cog):
             db.settings.update_one({"user_id": id}, {"$set":{"premium.status": False, "premium.expires": None}})
             await ctx.respond(f"User: `{id}` no longer has *premium*")
         elif type == "guild":
-            if not db.settings.find_one({"user_id": id, "premium.status": True}):
+            if not db.settings.find_one({"guild_id": id, "premium.status": True}):
                 return await ctx.respond(f"Guild: `{id}` do not have *premium*")
             db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": False, "premium.expires": None}})
             await ctx.respond(f"Guild: `{id}` no longer has *premium*")

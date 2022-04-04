@@ -41,7 +41,10 @@ class bump(commands.Cog):
         
         channel_ids = db.settings.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
         for item in channel_ids:
-            channel = self.client.get_channel(item["bump_channel"])
+            try:
+                channel = self.client.get_channel(item["bump_channel"])
+            except Exception:
+                pass
             if channel:
                 if item["status"] == "ON":
                     try:

@@ -59,9 +59,9 @@ def get_date(settings, total):
     if settings["premium"]["status"] is True:
         expires = settings["premium"]["expires"]
         if expires is None:
-            expires = datetime.datetime.today()
+            expires = datetime.datetime.utcnow()
     else:
-        expires = datetime.datetime.today()
+        expires = datetime.datetime.utcnow()
         
     if total is False:
         return False
@@ -135,7 +135,7 @@ async def get_delay(ctx, client):
         return 0 
                 
     if datetime.datetime.now() <= settings["cooldown"]:
-        left = settings["cooldown"] - datetime.datetime.now()
+        left = settings["cooldown"] - datetime.datetime.utcnow()
         seconds = left.total_seconds()
         minutes = seconds // 60
         
@@ -147,7 +147,7 @@ async def get_delay(ctx, client):
                 minutes = minutes - read_config["premium"]
                 
         channel = client.get_channel(951095386959929355)
-        date = datetime.datetime.now() - datetime.timedelta(hours=12)                
+        date = datetime.datetime.utcnow() - datetime.timedelta(hours=12)                
         async for message in channel.history(after=date):
             user = message.mentions[0]
             if ctx.user == user:
@@ -167,7 +167,7 @@ async def check_ratelimit(ctx, client):
         em.add_field(name="Note", value=read_config["note"], inline=False)
         return False, em
     else:
-        then = datetime.datetime.now() + datetime.timedelta(minutes=read_config["cooldown"])
+        then = datetime.datetime.utcnow() + datetime.timedelta(minutes=read_config["cooldown"])
         data = {"$set":{"cooldown": then}}
         db.settings.update_one({"guild_id": ctx.guild.id}, data)
         return True, None        
@@ -192,3 +192,23 @@ async def get_server(ctx):
     view = diskord.ui.View()
     view.add_item(button)
     return em, view
+
+def get_premium_user(user_id):
+    if db.settings.find_one({"user_id": user_id, "premium.status": True}):
+        settings = db.settings.find_one({"guild_id": user_id})
+        if settings["premium"]["expires"] is False:
+            return "True"
+        expires = datetime.datetime.timestamp(settings["premium"]["expires"])
+        return f"True <t:{round(expires)}:D>"
+    else:
+        return "False"
+    
+def get_premium_server(guild_id):
+    if db.settings.find_one({"guild_id": guild_id, "premium.status": True}):
+        settings = db.settings.find_one({"guild_id": guild_id})
+        if settings["premium"]["expires"] is False:
+            return "True"
+        expires = datetime.datetime.timestamp(settings["premium"]["expires"])
+        return f"True <t:{round(expires)}:D>"
+    else:
+        return "False"
