@@ -7,22 +7,10 @@ class prefix_cmds(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def sync(self, ctx):
         await self.client.sync_application_commands()
-        await ctx.reply("Done")
-        
-    @commands.command()
-    @commands.is_owner()
-    async def unreg(self, ctx):
-        await self.client.sync_application_commands(delete_unregistered_commands=True)
-        await ctx.reply("Done")
-        
-    @commands.command()
-    @commands.is_owner()
-    async def clean(self, ctx):
-        await self.client.clean_register_application_commands()
         await ctx.reply("Done")
         
     @commands.command(name="bump", description="Command to bumps your server")

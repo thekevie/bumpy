@@ -90,7 +90,7 @@ class premium(commands.Cog):
             check_guild(id, "premium")                    
             db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
             expires = round(datetime.datetime.timestamp(expires))
-            await ctx.respond(f"Guild: `{id}` now has premium that expires on <t:*{expires}:D>")
+            await ctx.respond(f"Guild: `{id}` now has premium that expires on <t:{expires}:D>")
         
     @premium.sub_command(name="remove", description="Remove Bumpy premium from a guild/user")
     @commands.is_owner()
