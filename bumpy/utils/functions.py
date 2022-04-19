@@ -16,10 +16,7 @@ def check_guild(guild_id, type):
     if not db.settings.find_one({"guild_id": guild_id}):
         db.settings.insert_one({"guild_id": guild_id}) 
         
-    if type in ["all", "settings", "bump"]:
-        if not db.settings.find_one({"guild_id": guild_id}, {"_id": 0, "status": 1}):
-            db.settings.update_one({"guild_id": guild_id}, {"$set":{"status": "ON"}})
-            
+    if type in ["all", "settings", "bump"]:            
         if not db.settings.find_one({"guild_id": guild_id}, {"_id": 0, "bump_channel": 1}):
             db.settings.update_one({"guild_id": guild_id}, {"$set":{"bump_channel": None}})
         
@@ -38,7 +35,7 @@ def check_guild(guild_id, type):
             
     if type in ["all", "block"]:
         if not db.settings.find_one({"guild_id": guild_id}, {"_id": 0, "banned": 1}):
-            db.settings.update_one({"guild_id": guild_id}, {"$set":{"banned.status": False, "banned.reason": None, "banned.date": None}})
+            db.settings.update_one({"guild_id": guild_id}, {"$set":{"banned": False}})
         
     return db.settings.find_one({"guild_id": guild_id})
 
@@ -48,10 +45,10 @@ def check_user(user_id, type):
         
     if type in ["all", "premium"]:
         if not db.settings.find_one({"user_id": user_id}, {"_id": 0, "premium": 1}):
-            db.settings.update_one({"user_id": user_id}, {"$set":{"premium.status": False, "premium.expires": None}})
+            db.settings.update_one({"user_id": user_id}, {"$set":{"premium": False}})
     if type in ["all", "block"]:
         if not db.settings.find_one({"user_id": user_id}, {"_id": 0, "banned": 1}):
-            db.settings.update_one({"user_id": user_id}, {"$set":{"banned.status": False, "banned.reason": None, "banned.date": None}})
+            db.settings.update_one({"user_id": user_id}, {"$set":{"banned": False}})
                 
     return db.settings.find_one({"user_id": user_id})
 

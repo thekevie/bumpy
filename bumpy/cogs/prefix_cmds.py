@@ -7,12 +7,6 @@ class prefix_cmds(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def sync(self, ctx):
-        await self.client.sync_application_commands()
-        await ctx.reply("Done")
-        
     @commands.command(name="bump", description="Command to bumps your server")
     async def _bump(self, ctx):
         #add_command_stats("bump")

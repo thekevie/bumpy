@@ -68,26 +68,26 @@ class report(commands.Cog):
         if type == "user":
             settings = check_user(id, "block")                
             if settings["banned"]["status"] is True:
-                db.settings.update_one({"user_id": id}, {"$set":{"banned.status": False, "banned.reason": reason, "banned.date": datetime.datetime.now()}})
+                db.settings.update_one({"user_id": id}, {"$set":{"banned": False}})
                 await ctx.respond(f"User: `{id}` has been *unbanned*", ephemeral=True)
-            if settings["banned"]["status"] is True:
-                db.settings.update_one({"user_id": id}, {"$set":{"banned.status": True, "banned.reason": reason, "banned.date": datetime.datetime.now()}})
+            if settings["banned"] is False:
+                db.settings.update_one({"user_id": id}, {"$set":{"banned.status": True, "banned.reason": reason}})
                 await ctx.respond(f"User: `{id}` has been *banned*", ephemeral=True)
                 
         elif type == "guild":
             settings = check_guild(id, "block")
             if settings["banned"]["status"] is True:
-                db.settings.update_one({"guild_id": id}, {"$set":{"banned.status": False, "banned.reason": reason, "banned.date": datetime.datetime.now()}})
+                db.settings.update_one({"guild_id": id}, {"$set":{"banned": False}})
                 await ctx.respond(f"Guild: `{id}` has been *unbanned*", ephemeral=True)    
-            elif settings["banned"]["status"] is False:
-                db.settings.update_one({"guild_id": id}, {"$set":{"banned.status": True, "banned.reason": reason, "banned.date": datetime.datetime.now()}})
+            elif settings["banned"] is False:
+                db.settings.update_one({"guild_id": id}, {"$set":{"banned.status": True, "banned.reason": reason}})
                 await ctx.respond(f"Guild: `{id}` has been *banned*", ephemeral=True)
                 guilds = db.settings.find({}, {"_id": 0, "bump_channel": 1})
                 for guild in guilds:
                     channel = self.client.get_channel(guild["bump_channel"])
                     async for message in channel.history():
                         for embed in message.embeds:
-                            if id in embed.author.name:
+                            if int(id) in embed.author.name:
                                 await message.delete()
                                 time.sleep(2)        
       

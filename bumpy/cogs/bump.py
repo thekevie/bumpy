@@ -36,6 +36,7 @@ class bump(commands.Cog):
         em = diskord.Embed(title="Bumping!", description="The server is being bumped", color=diskord.Colour.blue())
         em.add_field(name="Note", value=read_config["note"], inline=False)
         await ctx.respond(embed=em)
+        add_command_stats("bump")
         
         server_embed, server_button = await get_server(ctx)
         
@@ -46,7 +47,9 @@ class bump(commands.Cog):
             except Exception:
                 pass
             if channel:
-                if item["status"] == "ON":
+                if not item["status"] is None:
+                    pass
+                else:
                     try:
                         await channel.send(embed=server_embed, view=server_button)
                     except Exception:
@@ -55,7 +58,6 @@ class bump(commands.Cog):
         em = diskord.Embed(title="Bumped!", description="The server has been bumped.", color=diskord.Colour.green())
         em.add_field(name="Note", value=read_config["note"], inline=False)
         await ctx.channel.send(embed=em)
-        add_command_stats("bump")
         
 def setup(client):
     client.add_cog(bump(client))
