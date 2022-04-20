@@ -15,13 +15,13 @@ class events(commands.Cog):
             for guild in guilds:
                 if not guild["premium"]["expires"] is False:
                     if guild["premium"]["expires"] < datetime.datetime.today():
-                        db.settings.update_one({"guild_id": guild["guild_id"]}, {"$set":{"premium.status": False, "premium.expires": None}})
+                        db.settings.update_one({"guild_id": guild["guild_id"]}, {"$unset":{"premium": ""}})
         users = db.settings.find({"premium.status": True, "user_id":{"$exists": True}})
         if users:
             for user in users:
                 if not user["premium"]["expires"] is False:
                     if user["premium"]["expires"] < datetime.datetime.today():
-                        db.settings.update_one({"user_id": user["user_id"]}, {"$set":{"premium.status": False, "premium.expires": None}})
+                        db.settings.update_one({"user_id": user["user_id"]}, {"$unset":{"premium": ""}})
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -43,10 +43,6 @@ class events(commands.Cog):
                     pass
                 else:
                     db.settings.delete_one({"guild_id": guild_id})
-    
-    @commands.Cog.listener()
-    async def on_guild_leave(self, ctx):  
-        db.settings.delete_one({"guild_id": ctx.guild.id})
       
 def setup(client):
     client.add_cog(events(client))

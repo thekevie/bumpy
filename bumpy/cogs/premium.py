@@ -125,12 +125,12 @@ class premium(commands.Cog):
         if type == "user":
             if not db.settings.find_one({"user_id": id, "premium.status": True}):
                 return await ctx.send(f"User: `{id}` do not have *premium*")
-            db.settings.update_one({"user_id": id}, {"$set":{"premium": False}})
+            db.settings.update_one({"user_id": id}, {"$unset":{"premium": ""}})
             await ctx.send(f"User: `{id}` no longer has *premium*")
         elif type == "guild":
             if not db.settings.find_one({"guild_id": id, "premium.status": True}):
                 return await ctx.send(f"Guild: `{id}` do not have *premium*")
-            db.settings.update_one({"guild_id": id}, {"$set":{"premium": False}})
+            db.settings.update_one({"guild_id": id}, {"$unset":{"premium": ""}})
             await ctx.send(f"Guild: `{id}` no longer has *premium*")
         
 def setup(client):

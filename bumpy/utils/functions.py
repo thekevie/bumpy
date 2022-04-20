@@ -97,16 +97,16 @@ def add_command_stats(command):
         db.stats.update_one({"_id": stats["_id"]}, data)
 
 def check_blocked(guild_id, user_id):
-    guild = db.settings.find_one({"guild_id": guild_id, "banned":{"exists": True}})
-    user = db.settings.find_one({"user_id": user_id, "banned":{"exists": True}})
-    if user:
+    if db.settings.find_one({"user_id": user_id, "banned":{"exists": True}}):
+        user = db.settings.find_one({"user_id": user_id})
         if user["banned"]["status"] is True:
             if not user["banned"]["reason"] is None:
                 reason = user["banned"]["reason"]
             else:
                 reason = "Not Provided"
             return True, reason
-    elif guild:   
+    elif db.settings.find_one({"guild_id": guild_id, "banned":{"exists": True}}):   
+        guild = db.settings.find_one({"guild_id": guild_id})
         if guild["banned"]["status"] is True:
             if not guild["banned"]["reason"] is None:
                 reason = guild["banned"]["reason"]
@@ -118,8 +118,6 @@ def check_blocked(guild_id, user_id):
 def check_for_server(ctx):
     settings = db.settings.find_one({"guild_id": ctx.guild.id})
     
-    if settings["status"] == "OFF":
-        return False, "Command has been disabled"
     if settings["bump_channel"] is None:
         return False, "Bump Channel was not found"
     if settings["description"] is None:
@@ -128,6 +126,7 @@ def check_for_server(ctx):
 
 async def get_delay(ctx, client):    
     settings = db.settings.find_one({"guild_id": ctx.guild.id}, {"_id": 0})
+    user = db.settings.find_one({"user_id": ctx.user.id}, {"_id": 0})
     if settings["cooldown"] is None:
         return 0 
                 
@@ -136,25 +135,23 @@ async def get_delay(ctx, client):
         seconds = left.total_seconds()
         minutes = seconds // 60
         
-        if settings["premium"]["status"] is True:
-            minutes = minutes - read_config["premium"]
-        elif db.settings.find_one({"user_id": ctx.user.id}, {"_id": 0, "premium": 1}):
-            user = db.settings.find_one({"user_id": ctx.guild.id}, {"_id": 0, "premium": 1})
+        if db.settings.find_one({"guild_id": ctx.guild.id, "premium":{"exists": True}}):
+            if settings["premium"]["status"] is True:
+                minutes = minutes - read_config["premium"]
+        elif db.settings.find_one({"user_id": ctx.user.id, "premium":{"exists": True}}):
             if user["premium"]["stats"] is True:
                 minutes = minutes - read_config["premium"]
                 
         channel = client.get_channel(951095386959929355)
         date = datetime.datetime.utcnow() - datetime.timedelta(hours=12)                
         async for message in channel.history(after=date):
-            user = message.mentions[0]
-            if ctx.user == user:
+            if str(ctx.user.id) in message.content:
                 if "top.gg" in message.content:
                     minutes = minutes - read_config["top"]
                 if "dbl" in message.content:
                     minutes = minutes - read_config["dbl"]
         return minutes
     return 0
-    
     
 async def check_ratelimit(ctx, client):
     left = await get_delay(ctx, client)

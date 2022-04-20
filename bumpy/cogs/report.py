@@ -68,7 +68,7 @@ class report(commands.Cog):
         if type == "user":
             settings = check_user(id, "block")                
             if settings["banned"]["status"] is True:
-                db.settings.update_one({"user_id": id}, {"$set":{"banned": False}})
+                db.settings.update_one({"user_id": id}, {"$unset":{"banned": ""}})
                 await ctx.respond(f"User: `{id}` has been *unbanned*", ephemeral=True)
             if settings["banned"] is False:
                 db.settings.update_one({"user_id": id}, {"$set":{"banned.status": True, "banned.reason": reason}})
@@ -77,7 +77,7 @@ class report(commands.Cog):
         elif type == "guild":
             settings = check_guild(id, "block")
             if settings["banned"]["status"] is True:
-                db.settings.update_one({"guild_id": id}, {"$set":{"banned": False}})
+                db.settings.update_one({"guild_id": id}, {"$unset":{"banned": ""}})
                 await ctx.respond(f"Guild: `{id}` has been *unbanned*", ephemeral=True)    
             elif settings["banned"] is False:
                 db.settings.update_one({"guild_id": id}, {"$set":{"banned.status": True, "banned.reason": reason}})
