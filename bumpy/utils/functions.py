@@ -53,8 +53,9 @@ def check_user(user_id, type):
     return db.settings.find_one({"user_id": user_id})
 
 def get_date(settings, total):
-    if settings["premium"]["status"] is True:
-        expires = settings["premium"]["expires"]
+    if not settings["premium"] is False:
+        if settings["premium"]["status"] is True:
+            expires = settings["premium"]["expires"]
         if expires is None:
             expires = datetime.datetime.utcnow()
     else:
