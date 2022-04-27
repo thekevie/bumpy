@@ -75,10 +75,6 @@ async def bump_check(ctx, client):
     except diskord.NotFound:
         return False, "That channel do not exist"
 
-    for role in ctx.guild.get_member(client.user.id).roles:
-        ov = bump_channel.overwrites_for(role)
-        # Comming Soon
-
     try:
         await bump_channel.send("Checking for Bump Channel", delete_after=1)
     except diskord.Forbidden:
