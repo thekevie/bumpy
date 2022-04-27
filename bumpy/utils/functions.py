@@ -31,7 +31,7 @@ def check_guild(guild_id, type):
             
     if type in ["all", "premium"]:
         if not db.settings.find_one({"guild_id": guild_id}, {"_id": 0, "premium": 1}):
-            db.settings.update_one({"guild_id": guild_id}, {"$set":{"premium.status": False, "premium.expires": None}})
+            db.settings.update_one({"guild_id": guild_id}, {"$set":{"premium": False}})
             
     if type in ["all", "block"]:
         if not db.settings.find_one({"guild_id": guild_id}, {"_id": 0, "banned": 1}):
