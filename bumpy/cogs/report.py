@@ -82,11 +82,14 @@ class report(commands.Cog):
                 guilds = db.settings.find({}, {"_id": 0, "bump_channel": 1})
                 for guild in guilds:
                     channel = self.client.get_channel(guild["bump_channel"])
-                    async for message in channel.history():
-                        for embed in message.embeds:
-                            if str(id) in embed.author.name:
-                                await message.delete()
-                                time.sleep(2)
+                    try:
+                        async for message in channel.history():
+                            for embed in message.embeds:
+                                if str(id) in embed.author.name:
+                                    await message.delete()
+                                    time.sleep(2)
+                    except Exception:
+                        pass
             elif settings["blocked"]["status"] is True:
                 db.settings.update_one({"guild_id": id}, {"$unset":{"blocked": ""}})
                 await ctx.respond(f"Guild: `{id}` has been *unblocked*", ephemeral=True)
