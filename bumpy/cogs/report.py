@@ -79,7 +79,7 @@ class report(commands.Cog):
             if settings["blocked"] is False:
                 db.settings.update_one({"guild_id": id}, {"$set":{"blocked": {"status": True, "reason": reason}}})
                 await ctx.respond(f"Guild: `{id}` has been *blocked*", ephemeral=True)
-                guilds = db.settings.find({}, {"_id": 0, "bump_channel": 1})
+                guilds = db.settings.find({"bump_channel":{"$exists":True}})
                 for guild in guilds:
                     channel = self.client.get_channel(guild["bump_channel"])
                     try:
