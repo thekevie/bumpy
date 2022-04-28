@@ -73,12 +73,12 @@ async def bump_check(ctx, client):
     settings = db.settings.find_one({"guild_id": ctx.guild.id})
     try:
         bump_channel = client.get_channel(settings["bump_channel"])
-    except diskord.NotFound:
+    except Exception:
         return False, "That channel do not exist"
 
     try:
         await bump_channel.send("Checking for Bump Channel", delete_after=1)
-    except diskord.Forbidden:
+    except Exception:
         return False, "I dont have Permission to use that channel"
     return True, None
 
