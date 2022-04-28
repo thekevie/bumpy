@@ -59,20 +59,20 @@ class premium(commands.Cog):
         if type == "user":   
             settings = check_user(id, "premium")
             expires = get_date(settings, total)
-            db.settings.update_one({"user_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
+            db.settings.update_one({"user_id": id}, {"$set":{"premium": {"status": True, "expires": expires}}})
             if not expires is False:
                 expires = round(datetime.datetime.timestamp(expires))
                 expires = f"<t:{expires}:D>"
-            await ctx.send(f"User: `{id}` now has premium that expires on {expires}")
+            await ctx.send(f"User: `{id}` now has *premium* that expires on {expires}")
             
         elif type == "guild":
             settings = check_guild(id, "premium")
             expires = get_date(settings, total)   
-            db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
+            db.settings.update_one({"guild_id": id}, {"$set":{"premium": {"status": True, "expires": expires}}})
             if not expires is False:
                 expires = round(datetime.datetime.timestamp(expires))
                 expires = f"<t:{expires}:D>"
-            await ctx.send(f"Guild: `{id}` now has premium that expires on {expires}")
+            await ctx.send(f"Guild: `{id}` now has *premium* that expires on {expires}")
     
     @admin_premium.command(name="set", description="Set Bumpy premium for a guild/user")
     @commands.is_owner()
@@ -96,19 +96,19 @@ class premium(commands.Cog):
             
         if type == "user":   
             check_user(id, "premium")                    
-            db.settings.update_one({"user_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
+            db.settings.update_one({"user_id": id}, {"$set":{"premium": {"status": True, "expires": expires}}})
             if not expires is False:
                 expires = round(datetime.datetime.timestamp(expires))
                 expires = f"<t:{expires}:D>"
-            await ctx.send(f"User: `{id}` now has premium that expires on {expires}")
+            await ctx.send(f"User: `{id}` now has *premium* that expires on {expires}")
             
         elif type == "guild":   
             check_guild(id, "premium")                    
-            db.settings.update_one({"guild_id": id}, {"$set":{"premium.status": True, "premium.expires": expires}})
+            db.settings.update_one({"guild_id": id}, {"$set":{"premium": {"status": True, "expires": expires}}})
             if not expires is False:
                 expires = round(datetime.datetime.timestamp(expires))
                 expires = f"<t:{expires}:D>"
-            await ctx.send(f"Guild: `{id}` now has premium that expires on {expires}")
+            await ctx.send(f"Guild: `{id}` now has *premium* that expires on {expires}")
         
     @admin_premium.command(name="remove", description="Remove Bumpy premium from a guild/user")
     @commands.is_owner()

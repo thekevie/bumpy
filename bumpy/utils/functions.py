@@ -34,8 +34,8 @@ def check_guild(guild_id, type):
             db.settings.update_one({"guild_id": guild_id}, {"$set":{"premium": False}})
             
     if type in ["all", "block"]:
-        if not db.settings.find_one({"guild_id": guild_id}, {"_id": 0, "banned": 1}):
-            db.settings.update_one({"guild_id": guild_id}, {"$set":{"banned": False}})
+        if not db.settings.find_one({"guild_id": guild_id}, {"_id": 0, "blocked": 1}):
+            db.settings.update_one({"guild_id": guild_id}, {"$set":{"blocked": False}})
         
     return db.settings.find_one({"guild_id": guild_id})
 
@@ -47,8 +47,8 @@ def check_user(user_id, type):
         if not db.settings.find_one({"user_id": user_id}, {"_id": 0, "premium": 1}):
             db.settings.update_one({"user_id": user_id}, {"$set":{"premium": False}})
     if type in ["all", "block"]:
-        if not db.settings.find_one({"user_id": user_id}, {"_id": 0, "banned": 1}):
-            db.settings.update_one({"user_id": user_id}, {"$set":{"banned": False}})
+        if not db.settings.find_one({"user_id": user_id}, {"_id": 0, "blocked": 1}):
+            db.settings.update_one({"user_id": user_id}, {"$set":{"blocked": False}})
                 
     return db.settings.find_one({"user_id": user_id})
 
@@ -94,23 +94,23 @@ def add_command_stats(command):
         db.stats.update_one({"_id": stats["_id"]}, data)
 
 def check_blocked(guild_id, user_id):
-    if db.settings.find_one({"user_id": user_id, "banned":{"exists": True}}):
+    if db.settings.find_one({"user_id": user_id, "blocked":{"$exists": True}}):
         user = db.settings.find_one({"user_id": user_id})
-        if user["banned"]["status"] is True:
-            if not user["banned"]["reason"] is None:
-                reason = user["banned"]["reason"]
+        if user["blocked"]["status"] is True:
+            if not user["blocked"]["reason"] is None:
+                reason = user["blocked"]["reason"]
             else:
                 reason = "Not Provided"
-            return True, reason
-    elif db.settings.find_one({"guild_id": guild_id, "banned":{"exists": True}}):   
+            return True, reason, "You are blocked"
+    elif db.settings.find_one({"guild_id": guild_id, "blocked":{"$exists": True}}):   
         guild = db.settings.find_one({"guild_id": guild_id})
-        if guild["banned"]["status"] is True:
-            if not guild["banned"]["reason"] is None:
-                reason = guild["banned"]["reason"]
+        if guild["blocked"]["status"] is True:
+            if not guild["blocked"]["reason"] is None:
+                reason = guild["blocked"]["reason"]
             else:
                 reason = "Not Provided"
-            return True, reason     
-    return False, None
+            return True, reason, "This server is blocked"    
+    return False, None, None
 
 def check_for_server(ctx):
     settings = db.settings.find_one({"guild_id": ctx.guild.id})
@@ -132,10 +132,10 @@ async def get_delay(ctx, client):
         seconds = left.total_seconds()
         minutes = seconds // 60
         
-        if db.settings.find_one({"guild_id": ctx.guild.id, "premium":{"exists": True}}):
+        if db.settings.find_one({"guild_id": ctx.guild.id, "premium":{"$exists": True}}):
             if settings["premium"]["status"] is True:
                 minutes = minutes - read_config["premium"]
-        elif db.settings.find_one({"user_id": ctx.user.id, "premium":{"exists": True}}):
+        elif db.settings.find_one({"user_id": ctx.user.id, "premium":{"$exists": True}}):
             if user["premium"]["stats"] is True:
                 minutes = minutes - read_config["premium"]
                 

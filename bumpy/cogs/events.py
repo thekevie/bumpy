@@ -9,7 +9,7 @@ class events(commands.Cog):
         self.client = client
         
     @tasks.loop(hours=3)
-    async def premium_check(self):
+    async def check(self):
         guilds = db.settings.find({"premium.status": True, "guild_id":{"$exists": True}})
         if guilds:
             for guild in guilds:
@@ -22,7 +22,8 @@ class events(commands.Cog):
                 if not user["premium"]["expires"] is False:
                     if user["premium"]["expires"] < datetime.datetime.today():
                         db.settings.update_one({"user_id": user["user_id"]}, {"$unset":{"premium": ""}})
-
+        db.settings.delete_many({"user_id":{"$exists": True}, "premium":{"$exists": False}, "blocked":{"$exists": False}})
+        
     @commands.Cog.listener()
     async def on_ready(self):
         print(self.client.user.name, f"is online")
@@ -30,7 +31,7 @@ class events(commands.Cog):
         print(f"{len(self.client.users)} Users")
         await self.client.change_presence(status=diskord.Status.online)
         
-        self.premium_check.start()
+        self.check.start()
       
         if not self.client.user.id == 880766859534794764:
             return

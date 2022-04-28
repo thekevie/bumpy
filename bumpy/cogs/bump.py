@@ -9,9 +9,9 @@ class bump(commands.Cog):
     @diskord.application.slash_command(name="bump", description="Push the server to more users server")
     async def bump(self, ctx):
         check_guild(ctx.guild.id, "bump")
-        cb, reason = check_blocked(ctx.guild.id, ctx.user.id)
+        cb, reason, title = check_blocked(ctx.guild.id, ctx.user.id)
         if cb is True:
-            em = diskord.Embed(title="Your server has been banned", description="If you want to appeal your ban [click here](https://discord.gg/KcH28tRtBu)", color=diskord.Colour.red())
+            em = diskord.Embed(title=title, description="If you want to appeal your block [click here](https://discord.gg/KcH28tRtBu)", color=diskord.Colour.red())
             em.add_field(name="Reason", value=reason, inline=False)
             await ctx.respond(embed=em)
             return

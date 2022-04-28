@@ -67,29 +67,29 @@ class report(commands.Cog):
         id = int(id)
         if type == "user":
             settings = check_user(id, "block")                
-            if settings["banned"] is False:
-                db.settings.update_one({"user_id": id}, {"$set":{"banned.status": True, "banned.reason": reason}})
-                await ctx.respond(f"User: `{id}` has been *banned*", ephemeral=True)
-            elif settings["banned"]["status"] is True:
-                db.settings.update_one({"user_id": id}, {"$unset":{"banned": ""}})
-                await ctx.respond(f"User: `{id}` has been *unbanned*", ephemeral=True)
+            if settings["blocked"] is False:
+                db.settings.update_one({"user_id": id}, {"$set":{"blocked": {"status": True, "reason": reason}}})
+                await ctx.respond(f"User: `{id}` has been *blocked*", ephemeral=True)
+            elif settings["blocked"]["status"] is True:
+                db.settings.update_one({"user_id": id}, {"$unset":{"blocked": ""}})
+                await ctx.respond(f"User: `{id}` has been *unblocked*", ephemeral=True)
                 
         elif type == "guild":
             settings = check_guild(id, "block")
-            if settings["banned"] is False:
-                db.settings.update_one({"guild_id": id}, {"$set":{"banned.status": True, "banned.reason": reason}})
-                await ctx.respond(f"Guild: `{id}` has been *banned*", ephemeral=True)
+            if settings["blocked"] is False:
+                db.settings.update_one({"guild_id": id}, {"$set":{"blocked": {"status": True, "reason": reason}}})
+                await ctx.respond(f"Guild: `{id}` has been *blocked*", ephemeral=True)
                 guilds = db.settings.find({}, {"_id": 0, "bump_channel": 1})
                 for guild in guilds:
                     channel = self.client.get_channel(guild["bump_channel"])
                     async for message in channel.history():
                         for embed in message.embeds:
-                            if int(id) in embed.author.name:
+                            if str(id) in embed.author.name:
                                 await message.delete()
                                 time.sleep(2)
-            elif settings["banned"]["status"] is True:
-                db.settings.update_one({"guild_id": id}, {"$unset":{"banned": ""}})
-                await ctx.respond(f"Guild: `{id}` has been *unbanned*", ephemeral=True)        
+            elif settings["blocked"]["status"] is True:
+                db.settings.update_one({"guild_id": id}, {"$unset":{"blocked": ""}})
+                await ctx.respond(f"Guild: `{id}` has been *unblocked*", ephemeral=True)
       
 def setup(client):
     client.add_cog(report(client))
