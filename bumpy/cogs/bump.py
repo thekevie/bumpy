@@ -40,7 +40,7 @@ class bump(commands.Cog):
         
         server_embed, server_button = await get_server(ctx)
         
-        channel_ids = db.settings.find({}, {"_id": 0, "status": 1, "bump_channel": 1})
+        channel_ids = db.settings.find({"bump_channel": {"$exists":True}})
         for item in channel_ids:
             try:
                 channel = self.client.get_channel(item["bump_channel"])
