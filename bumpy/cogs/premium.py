@@ -1,6 +1,6 @@
-from logging import exception
-from diskord.ext import commands
-import diskord
+from discord.ext import commands
+from discord import app_commands
+import discord
 import datetime
 
 from utils.functions import *
@@ -9,12 +9,12 @@ class premium(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-    @diskord.application.slash_command(name="premium", description="Buy Bumpy premium for a guild/user")
-    async def premium(self, ctx):
+    @app_commands.command(name="premium", description="Buy Bumpy premium for a guild/user")
+    async def premium(self, interaction):
         add_command_stats("buy_premium")
-        em = diskord.Embed(title="Buy Bumpy Premium", color=diskord.Color.blue())
+        em = discord.Embed(title="Buy Bumpy Premium", color=discord.Color.blue())
         em.description = f"If you want to buy Bumpy Premium join the [support server](https://discord.gg/KcH28tRtBu) and message `kevie#9091` to pay with paypal"
-        await ctx.respond(embed=em)
+        await interaction.response.send_message(embed=em)
         
     @commands.group("premium")
     @commands.is_owner()
@@ -133,5 +133,5 @@ class premium(commands.Cog):
             db.settings.update_one({"guild_id": id}, {"$unset":{"premium": ""}})
             await ctx.send(f"Guild: `{id}` no longer has *premium*")
         
-def setup(client):
-    client.add_cog(premium(client))
+async def setup(client):
+    await client.add_cog(premium(client))

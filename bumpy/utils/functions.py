@@ -1,4 +1,4 @@
-import diskord
+import discord
 import json
 import pymongo
 import datetime
@@ -154,7 +154,7 @@ async def check_ratelimit(ctx, client):
     left = await get_delay(ctx, client)
 
     if 0 < left:      
-        em = diskord.Embed(title="Server on Cooldown", description=f"You can bump again in {round(left)} minutes.", color=diskord.Colour.red())
+        em = discord.Embed(title="Server on Cooldown", description=f"You can bump again in {round(left)} minutes.", color=discord.Colour.red())
         em.add_field(name="Note", value=read_config["note"], inline=False)
         return False, em
     else:
@@ -170,7 +170,7 @@ async def get_server(ctx):
         invite_channel = ctx.guild.text_channels[0]   
     invite = await invite_channel.create_invite(unique=False, max_age=0, max_uses=0, temporary=False)
     
-    em = diskord.Embed(color=diskord.Colour.blue())
+    em = discord.Embed(color=discord.Colour.blue())
     em.set_author(name=f"{ctx.guild.name} ({ctx.guild.id})", icon_url=ctx.guild.icon.url)
     em.add_field(name="Description", value=settings["description"], inline=False)
     em.add_field(name="Members", value=len(ctx.guild.members), inline=True)
@@ -179,8 +179,8 @@ async def get_server(ctx):
     em.add_field(name="Emojis", value=len(ctx.guild.emojis), inline=False) #[emoji for emoji in ctx.guild.id]
     em.set_footer(text="Bumpy | Use /report to report a server")
     
-    button = diskord.ui.Button(label="Join Server", style=diskord.ButtonStyle.url, url=f"{invite}")
-    view = diskord.ui.View()
+    button = discord.ui.Button(label="Join Server", style=discord.ButtonStyle.url, url=f"{invite}")
+    view = discord.ui.View()
     view.add_item(button)
     return em, view
 

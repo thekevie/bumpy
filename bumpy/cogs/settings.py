@@ -1,5 +1,7 @@
-from diskord.ext import commands
-import diskord
+from discord.ext import commands
+import discord
+from discord import app_commands
+from discord.app_commands import Choice, choices, Group, checks
 
 from utils.functions import *
 
@@ -25,50 +27,50 @@ class settings(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-    @diskord.application.slash_command()
-    async def settings(self, ctx):
-        pass
+    slash_settings = Group(
+        name="settings",
+        guild_only=True,
+        default_permissions=False,
+        description="Manage the servers settings"
+    )
     
-    @settings.sub_command(name="view", description="Show current settings")
-    async def _view(self, ctx):
+    @slash_settings.command(name="view", description="Show current settings")
+    async def _view(self, interaction):
         add_command_stats("settings_view")
-        settings = check_guild(ctx.guild.id, "settings")
-        em = diskord.Embed(title="Server Settings", color=diskord.Colour.blue())        
-        em.add_field(name="Premium", value=get_premium_server(ctx.guild.id))
+        settings = check_guild(interaction.guild.id, "settings")
+        em = discord.Embed(title="Server Settings", color=discord.Colour.blue())        
+        em.add_field(name="Premium", value=get_premium_server(interaction.guild.id))
         em.add_field(name="Bump-channel", value=get_bump_channel(settings))
         em.add_field(name="Invite-channel", value=get_invite_channel(settings))
         em.add_field(name="Description", value=get_description(settings))
-        await ctx.respond(embed=em)
+        await interaction.response.send_message(embed=em)
     
-    @settings.sub_command(name="invite-channel", description="Set your invite-channel")
+    @slash_settings.command(name="invite-channel", description="Set your invite-channel")
     @commands.has_permissions(manage_guild=True)
-    @diskord.application.option("channel")
-    async def _invite_channel(self, ctx, channel: diskord.TextChannel):
+    async def _invite_channel(self, interaction, channel: discord.TextChannel):
         add_command_stats("settings_invite_channel")
-        check_guild(ctx.guild.id, "settings")
+        check_guild(interaction.guild.id, "settings")
         data = {"$set":{"invite_channel": channel.id}}
-        db.settings.update_one({"guild_id": ctx.guild.id}, data)
-        await ctx.respond(f"*Invite Channel was set to <#{channel.id}>*")
+        db.settings.update_one({"guild_id": interaction.guild.id}, data)
+        await interaction.response.send_message(f"*Invite Channel was set to <#{channel.id}>*")
     
-    @settings.sub_command(name="bump-channel", description="Set your bump-channel")
+    @slash_settings.command(name="bump-channel", description="Set your bump-channel")
     @commands.has_permissions(manage_guild=True)
-    @diskord.application.option("channel")
-    async def _bump_channel(self, ctx, channel: diskord.TextChannel):
+    async def _bump_channel(self, interaction, channel: discord.TextChannel):
         add_command_stats("settings_bump_channel")
-        check_guild(ctx.guild.id, "settings")
+        check_guild(interaction.guild.id, "settings")
         data = {"$set":{"bump_channel": channel.id}}
-        db.settings.update_one({"guild_id": ctx.guild.id}, data)
-        await ctx.respond(f"*Bump Channel was set to <#{channel.id}>*")
+        db.settings.update_one({"guild_id": interaction.guild.id}, data)
+        await interaction.response.send_message(f"*Bump Channel was set to <#{channel.id}>*")
     
-    @settings.sub_command(name="description", description="Set your server-description")
+    @slash_settings.command(name="description", description="Set your server-description")
     @commands.has_permissions(manage_guild=True)
-    @diskord.application.option("description")
-    async def _description(self, ctx, description):
+    async def _description(self, interaction, description:str):
         add_command_stats("settings_description")
-        check_guild(ctx.guild.id, "settings")
+        check_guild(interaction.guild.id, "settings")
         data = {"$set":{"description": description}}
-        db.settings.update_one({"guild_id": ctx.guild.id}, data)
-        await ctx.respond(f"*Server Description was set to*\n\n{description}")
+        db.settings.update_one({"guild_id": interaction.guild.id}, data)
+        await interaction.response.send_message(f"*Server Description was set to*\n\n{description}")
             
-def setup(client):
-    client.add_cog(settings(client))
+async def setup(client):
+    await client.add_cog(settings(client))

@@ -1,5 +1,5 @@
-import diskord
-from diskord.ext import commands, tasks
+import discord
+from discord.ext import commands, tasks
 import datetime
 
 from utils.functions import *
@@ -29,7 +29,6 @@ class events(commands.Cog):
         print(self.client.user.name, f"is online")
         print(f"{len(self.client.guilds)} Servers")
         print(f"{len(self.client.users)} Users")
-        await self.client.change_presence(status=diskord.Status.online)
         
         self.check.start()
       
@@ -45,5 +44,5 @@ class events(commands.Cog):
                 else:
                     db.settings.delete_one({"guild_id": guild_id})
       
-def setup(client):
-    client.add_cog(events(client))
+async def setup(client):
+    await client.add_cog(events(client))

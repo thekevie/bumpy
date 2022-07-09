@@ -1,44 +1,45 @@
-from diskord.ext import commands
-import diskord
+from discord.ext import commands
+import discord
+from discord import app_commands
 
 from utils.functions import *
 class bump(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-    @diskord.application.slash_command(name="bump", description="Push the server to more users server")
-    async def bump(self, ctx):
-        check_guild(ctx.guild.id, "bump")
-        cb, reason, title = check_blocked(ctx.guild.id, ctx.user.id)
+    @app_commands.command(name="bump", description="Push the server to more users server")
+    async def bump(self, interaction):
+        check_guild(interaction.guild.id, "bump")
+        cb, reason, title = check_blocked(interaction.guild.id, interaction.user.id)
         if cb is True:
-            em = diskord.Embed(title=title, description="If you want to appeal your block [click here](https://discord.gg/KcH28tRtBu)", color=diskord.Colour.red())
+            em = discord.Embed(title=title, description="If you want to appeal your block [click here](https://discord.gg/KcH28tRtBu)", color=discord.Colour.red())
             em.add_field(name="Reason", value=reason, inline=False)
-            await ctx.respond(embed=em)
+            await interaction.response.send_message(embed=em)
             return
 
-        cfs, response = check_for_server(ctx)
+        cfs, response = check_for_server(interaction)
         if cfs is False:
-            em = diskord.Embed(title=response, color=diskord.Colour.red())
-            await ctx.respond(embed=em)
+            em = discord.Embed(title=response, color=discord.Colour.red())
+            await interaction.response.send_message(embed=em)
             return
 
-        status, response = await bump_check(ctx, self.client)
+        status, response = await bump_check(interaction, self.client)
         if status is False:
-            em = diskord.Embed(title=response, color=diskord.Colour.red())
-            await ctx.respond(embed=em)
+            em = discord.Embed(title=response, color=discord.Colour.red())
+            await interaction.response.send_message(embed=em)
             return
         
-        status, response = await check_ratelimit(ctx, self.client)
+        status, response = await check_ratelimit(interaction, self.client)
         if status is False:
-            await ctx.respond(embed=response)
+            await interaction.response.send_message(embed=response)
             return
         
-        em = diskord.Embed(title="Bumping!", description="The server is being bumped", color=diskord.Colour.blue())
+        em = discord.Embed(title="Bumping!", description="The server is being bumped", color=discord.Colour.blue())
         em.add_field(name="Note", value=read_config["note"], inline=False)
-        await ctx.respond(embed=em)
+        await interaction.response.send_message(embed=em)
         add_command_stats("bump")
         
-        server_embed, server_button = await get_server(ctx)
+        server_embed, server_button = await get_server(interaction)
         
         channel_ids = db.settings.find({"bump_channel": {"$exists":True}})
         for item in channel_ids:
@@ -52,9 +53,9 @@ class bump(commands.Cog):
                 except Exception:
                     pass
         
-        em = diskord.Embed(title="Bumped!", description="The server has been bumped.", color=diskord.Colour.green())
+        em = discord.Embed(title="Bumped!", description="The server has been bumped.", color=discord.Colour.green())
         em.add_field(name="Note", value=read_config["note"], inline=False)
-        await ctx.channel.send(embed=em)
+        await interaction.channel.send(embed=em)
         
-def setup(client):
-    client.add_cog(bump(client))
+async def setup(client):
+    await client.add_cog(bump(client))

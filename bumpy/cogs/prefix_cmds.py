@@ -1,5 +1,5 @@
-from diskord.ext import commands
-import diskord
+from discord.ext import commands
+import discord
 
 from utils.functions import *
 
@@ -13,5 +13,5 @@ class prefix_cmds(commands.Cog):
         #await ctx.invoke(self.client.get_application_command("bump"))
         await ctx.reply("Bumpy is now using slash commands. If you cant use them reinvite Bumpy to your server using this link\n https://dsc.gg/bumpy")
         
-def setup(client):
-    client.add_cog(prefix_cmds(client))
+async def setup(client):
+    await client.add_cog(prefix_cmds(client))
