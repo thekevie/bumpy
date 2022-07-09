@@ -25,7 +25,7 @@ class info(commands.Cog):
         guilds = len(self.client.guilds)
         users = len(self.client.users)
         
-        info1 = f"**Developer:** kevie#9091\n**Guild Count:** {guilds}\n**User Count:** {users}\n\n"
+        info1 = f"**Developer:** kevie#0011\n**Guild Count:** {guilds}\n**User Count:** {users}\n\n"
         info2 = f"**Python:** {sys.version[0]}.{sys.version[2]}\n**discord:** {discord.__version__}\n\n"
         info3 = f"**Memory Used:** {dataSize} MB | {procent}%\n\n"
         info4 = f"**Total Commands:** {commands}\n**Total Bumps:** {bumps}"
