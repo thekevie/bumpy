@@ -1,6 +1,6 @@
 # Rules
 ## Last Changed: March 2 2022
-If you break any of these rules you will be suspended from useing Bumpy. To remove your suspension you need to message bumpys developer (kevie#9091). If you have problems here is the [support server](https://discord.gg/KcH28tRtBu).
+If you break any of these rules you will be suspended from useing Bumpy. To remove your suspension you need to message bumpys developer (kevie#0011). If you have problems here is the [support server](https://discord.gg/KcH28tRtBu).
 
 ## Rule One
 - You are not allowed to use Alts, Auto-typer, Macros, Scripts or anything else that automates the bump.

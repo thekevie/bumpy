@@ -15,5 +15,5 @@ In accordance with policies enacted by the General Data Protection Regulation (G
 This Privacy Policy is effective as of February 16, 2022 and will remain in effect except with respect to any changes in its terms in the future. Any revisions to this Privacy Policy will be in effect immediately after being posted on this page. Bumpy developer (kevie#9091) reserves the right to update this Privacy Policy without notice. Any changes will be announced in [#updates](https://discord.com/channels/832743824181952534/936265981255356436) in the official [Dev Squad](https://discord.gg/KcH28tRtBu) discord server.
 
 ### Contact Information
-For any questions or concerns regarding the privacy policy or to request data removal, please send a message to kevie#9091 on Discord.
+For any questions or concerns regarding the privacy policy or to request data removal, please send a message to kevie#0011 on Discord.
 In using this bot, you agree to the policies outlined by this Privacy Policy. If you do not agree to this Privacy Policy, please do not use this bot.
