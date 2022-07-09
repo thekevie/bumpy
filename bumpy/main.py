@@ -19,7 +19,7 @@ class Bumpy(commands.AutoShardedBot):
             command_prefix = commands.when_mentioned_or("b!", "!b", "B!", "!B"),
             owner_ids = read_config()["owners"],
             intents = intents,
-            shard_count=2,
+            shard_count=11,
             case_insensitive=True,
             strip_after_prefix=True,
             status=discord.Status.online,
