@@ -30,7 +30,7 @@ class settings(commands.Cog):
     slash_settings = Group(
         name="settings",
         guild_only=True,
-        default_permissions=False,
+        default_permissions=discord.Permissions(manage_guild=True),
         description="Manage the servers settings"
     )
     
@@ -46,7 +46,7 @@ class settings(commands.Cog):
         await interaction.response.send_message(embed=em)
     
     @slash_settings.command(name="invite-channel", description="Set your invite-channel")
-    @commands.has_permissions(manage_guild=True)
+    @discord.app_commands.checks.has_permissions(manage_guild=True)
     async def _invite_channel(self, interaction, channel: discord.TextChannel):
         add_command_stats("settings_invite_channel")
         check_guild(interaction.guild.id, "settings")
@@ -55,7 +55,7 @@ class settings(commands.Cog):
         await interaction.response.send_message(f"*Invite Channel was set to <#{channel.id}>*")
     
     @slash_settings.command(name="bump-channel", description="Set your bump-channel")
-    @commands.has_permissions(manage_guild=True)
+    @discord.app_commands.checks.has_permissions(manage_guild=True)
     async def _bump_channel(self, interaction, channel: discord.TextChannel):
         add_command_stats("settings_bump_channel")
         check_guild(interaction.guild.id, "settings")
@@ -64,7 +64,7 @@ class settings(commands.Cog):
         await interaction.response.send_message(f"*Bump Channel was set to <#{channel.id}>*")
     
     @slash_settings.command(name="description", description="Set your server-description")
-    @commands.has_permissions(manage_guild=True)
+    @discord.app_commands.checks.has_permissions(manage_guild=True)
     async def _description(self, interaction, description:str):
         add_command_stats("settings_description")
         check_guild(interaction.guild.id, "settings")

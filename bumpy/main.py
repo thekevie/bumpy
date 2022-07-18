@@ -5,6 +5,9 @@ import asyncio
 import json
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
 def read_config():
     with open("config.json") as file:
         return json.load(file)
@@ -37,4 +40,4 @@ class Bumpy(commands.AutoShardedBot):
         return
 
 client = Bumpy()
-client.run(read_config()["token"])
+client.run(os.getenv("token"))
