@@ -13,7 +13,7 @@ class premium(commands.Cog):
     async def premium(self, interaction):
         add_command_stats("buy_premium")
         em = discord.Embed(title="Buy Bumpy Premium", color=discord.Color.blue())
-        em.description = f"If you want to buy Bumpy Premium join the [support server](https://discord.gg/KcH28tRtBu) and message `kevie#9091` to pay with paypal"
+        em.description = f"Premium is currently not avalible. The only current way to get permium is to win it in the [support server](https://discord.gg/KcH28tRtBu)"
         await interaction.response.send_message(embed=em)
         
     @commands.group("premium")
