@@ -51,7 +51,7 @@ class report(commands.Cog):
             em.add_field(name="Reason", value=reason, inline=False)
             em.add_field(name="Date", value=datetime.datetime.now(), inline=False)
             em.set_footer(text=f"USER ID: {interaction.user.id}")
-            await channel.send(self.client.get_user(read_config["owners"][0]).mention, embed=em)
+            await channel.send("<@292948682884775937>", embed=em)
         else:
             return
         

@@ -23,9 +23,8 @@ class info(commands.Cog):
         commands = stats["commands"]
         
         guilds = len(self.client.guilds)
-        users = len(self.client.users)
         
-        info1 = f"**Developer:** kevie#0011\n**Guild Count:** {guilds}\n**User Count:** {users}\n\n"
+        info1 = f"**Developer:** kevie#0011\n**Guild Count:** {guilds}\n\n"
         info2 = f"**Python:** {sys.version[0]}.{sys.version[2]}\n**discord:** {discord.__version__}\n\n"
         info3 = f"**Memory Used:** {dataSize} MB | {procent}%\n\n"
         info4 = f"**Total Commands:** {commands}\n**Total Bumps:** {bumps}"
@@ -85,19 +84,6 @@ class info(commands.Cog):
         
         em = discord.Embed(title="Invite Bumpy to your server", color=discord.Color.blue())
         await interaction.response.send_message(embed=em, view=view)
- 
-    @app_commands.command(name="userinfo", description="Get information about a user")
-    async def userinfo(self, interaction, user: discord.User=None):
-        add_command_stats("userinfo")
-        user = user or interaction.user
-        username = f"**Name:** {user.display_name}#{user.discriminator}"
-        userid = f"**User ID:** `{user.id}`"
-        created = f"**Created:** <t:{round(datetime.datetime.timestamp(user.created_at))}:D>"
-        joined = f"**Joined:** <t:{round(datetime.datetime.timestamp(user.joined_at))}:D>"
-        premium = f"**Premium:** {get_premium_user(user.id)}"
-        em = discord.Embed(color=discord.Color.blue())
-        em.description = f"{username}\n{userid}\n{created}\n{joined}\n{premium}"
-        await interaction.response.send_message(embed=em)
         
     @app_commands.command(name="serverinfo", description="Get information about the server")
     async def userinfo(self, interaction):
@@ -105,12 +91,11 @@ class info(commands.Cog):
         guild = interaction.guild
         guildname = f"**Name:** {guild.name}"
         guildid = f"**Guild ID:** `{guild.id}`"
-        owner = f"**Owner:** {guild.owner.display_name}#{guild.owner.discriminator}"
         members = f"**Members:** {(guild.member_count)}"
         created = f"**Created:** <t:{round(datetime.datetime.timestamp(guild.created_at))}:D>"
         premium = f"**Premium:** {get_premium_server(guild.id)}"
         em = discord.Embed(color=discord.Color.blue())
-        em.description = f"{guildname}\n{guildid}\n{owner}\n{created}\n{premium}"
+        em.description = f"{guildname}\n{guildid}\n{members}\n{created}\n{premium}"
         await interaction.response.send_message(embed=em)
          
 async def setup(client):

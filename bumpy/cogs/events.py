@@ -28,7 +28,6 @@ class events(commands.Cog):
     async def on_ready(self):
         print(self.client.user.name, f"is online")
         print(f"{len(self.client.guilds)} Servers")
-        print(f"{len(self.client.users)} Users")
         
         self.check.start()
       
